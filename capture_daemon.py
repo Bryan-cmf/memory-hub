@@ -240,6 +240,12 @@ def _process(pid: str, msg: dict):
         "session_id": msg.get("session_id",""),
     })
     if len(STATE["recent"]) > 200: STATE["recent"] = STATE["recent"][-200:]
+    # 🔄 Multi-DB sync: write to all available backends
+    try:
+        from memory_hub.sync_engine import sync_capture
+        threading.Thread(target=sync_capture, args=(pid, msg), daemon=True).start()
+    except Exception:
+        pass
 
 def _file_save(pid: str, msg: dict):
     d = CAPTURE_DIR / pid / datetime.now().strftime("%Y/%m")
@@ -802,6 +808,15 @@ class DH(BaseHTTPRequestHandler):
             self.send_response(200);self.send_header("Content-Type","application/json")
             self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
             self.wfile.write(json.dumps(dict(ch_stats),ensure_ascii=False).encode())
+        elif p=="/api/databases":
+            try:
+                from memory_hub.sync_engine import get_all_stats
+                stats = get_all_stats()
+            except Exception:
+                stats = {"error": "sync engine unavailable"}
+            self.send_response(200);self.send_header("Content-Type","application/json")
+            self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
+            self.wfile.write(json.dumps(stats,ensure_ascii=False).encode())
         else:
             self.send_response(404);self.end_headers()
 

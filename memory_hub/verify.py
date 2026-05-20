@@ -20,39 +20,68 @@ def status_detail():
     print(f"{'═'*60}")
     print(f"  Time: {datetime.now(HKT).strftime('%Y-%m-%d %H:%M:%S')} HKT\n")
 
-    # ── 1. Qdrant Collections ──
-    print(f"{B}🗄️  Qdrant Vector Database{N}")
+    # ── 1. All Databases ──
+    print(f"{B}🗄️  All Storage Backends{N}")
     print(f"  {'─'*56}")
     try:
-        req = urllib.request.Request("http://localhost:6333/collections", method="GET")
-        resp = urllib.request.urlopen(req, timeout=5)
-        data = json.loads(resp.read())
-        cols = data.get("result", {}).get("collections", [])
-        if not cols:
-            print(f"  {R}❌ No collections found — Qdrant may be empty{N}")
-        else:
-            total_pts = 0
-            lines = []
-            for c in sorted(cols, key=lambda x: x["name"]):
-                cn = c["name"]
-                try:
-                    req2 = urllib.request.Request(f"http://localhost:6333/collections/{cn}", method="GET")
-                    resp2 = urllib.request.urlopen(req2, timeout=3)
-                    d2 = json.loads(resp2.read())
-                    pts = d2.get("result", {}).get("points_count", 0)
-                    status = d2.get("result", {}).get("status", "unknown")
-                    total_pts += pts
-                    bar = "█" * min(20, pts // 100) + "░" * max(0, 20 - pts // 100)
-                    icon = f"{G}🟢{N}" if status == "green" else f"{Y}🟡{N}"
-                    lines.append(f"  {icon} {cn:<20} {pts:>6} pts  {bar}")
-                except:
-                    lines.append(f"  {R}❌{N} {cn:<20} {'—':>6} pts")
-            for l in lines:
-                print(l)
-            print(f"  {'─'*56}")
-            print(f"  {B}Total:{N} {total_pts} vector points across {len(cols)} collections")
-    except Exception as e:
-        print(f"  {R}❌ Qdrant unavailable: {str(e)[:50]}{N}")
+        from memory_hub.sync_engine import get_all_stats
+        stats = get_all_stats()
+    except Exception:
+        stats = {}
+
+    # File Storage
+    fs = stats.get("file", {})
+    print(f"  {B}💾 File Storage (Source of Truth):{N}")
+    for label in ["captures", "memories", "hooks"]:
+        info = fs.get(label, {})
+        files = info.get("files", 0)
+        size = info.get("size_bytes", 0) / 1024 / 1024
+        ok = files > 0
+        icon = f"{G}✅{N}" if ok else f"{Y}⚠️{N}"
+        print(f"  {icon} {label:<12} {files:>5} files, {size:.1f}MB")
+
+    # Qdrant
+    print(f"\n  {B}🧠 Qdrant (Vector Search):{N}")
+    qd = stats.get("qdrant", {})
+    if "error" in qd:
+        print(f"  {R}❌ {qd['error']}{N}")
+    else:
+        total_q = 0
+        for cn, pts in sorted(qd.items()):
+            total_q += max(0, pts)
+            bar = "█" * min(20, max(0, pts) // 100) + "░" * max(0, 20 - max(0, pts) // 100)
+            icon = f"{G}🟢{N}" if pts >= 0 else f"{R}❌{N}"
+            print(f"  {icon} {cn:<20} {pts:>6} pts  {bar}")
+        print(f"  {'─'*56}")
+        print(f"  {B}Qdrant Total:{N} {total_q} points across {len(qd)} collections")
+
+    # Chroma
+    print(f"\n  {B}📦 Chroma (Lightweight Vector):{N}")
+    ch = stats.get("chroma", {})
+    if "error" in ch:
+        print(f"  {Y}⚠️  {ch['error']}{N}")
+    elif not ch:
+        print(f"  {Y}⚠️  Not installed (run: pip install chromadb){N}")
+    else:
+        total_c = 0
+        for cn, pts in ch.items():
+            total_c += pts
+            print(f"  {G}✅{N} {cn:<20} {pts:>6} documents")
+        print(f"  {B}Chroma Total:{N} {total_c} documents")
+
+    # LanceDB
+    print(f"\n  {B}🪶 LanceDB (Embedded Vector):{N}")
+    ld = stats.get("lancedb", {})
+    if "error" in ld:
+        print(f"  {Y}⚠️  {ld['error']}{N}")
+    elif not ld:
+        print(f"  {Y}⚠️  Not installed (run: pip install lancedb){N}")
+    else:
+        total_l = 0
+        for tn, rows in ld.items():
+            total_l += rows
+            print(f"  {G}✅{N} {tn:<20} {rows:>6} rows")
+        print(f"  {B}LanceDB Total:{N} {total_l} rows")
 
     # ── 2. Daemon ──
     print(f"\n{B}📡 Capture Daemon{N}")
@@ -75,21 +104,7 @@ def status_detail():
     except Exception as e:
         print(f"  {R}❌ Daemon not responding: {str(e)[:50]}{N}")
 
-    # ── 3. File Storage ──
-    print(f"\n{B}💾 File Storage{N}")
-    print(f"  {'─'*56}")
-    mh_dir = Path(os.path.expanduser("~/.memory-hub"))
-    for label, subdir in [("Captures", "captured"), ("Memories", "memories"), ("Hooks", "hooks")]:
-        d = mh_dir / subdir
-        if d.exists():
-            files = list(d.rglob("*.json*"))
-            size = sum(f.stat().st_size for f in files if f.is_file())
-            size_mb = size / 1024 / 1024
-            print(f"  {'✅' if files else '⚠️'} {label:<12} {str(d):<40} {len(files):>4} files, {size_mb:.1f}MB")
-        else:
-            print(f"  ⚠️  {label:<12} {str(d):<40} not created yet")
-
-    # ── 4. MCP Server ──
+    # ── 3. MCP Server ──
     print(f"\n{B}🔌 MCP Server{N}")
     print(f"  {'─'*56}")
     import subprocess
