@@ -262,9 +262,16 @@ def _file_save(pid: str, msg: dict):
 def _clean_content(text: str) -> str:
     """Strip Conversation info metadata from OpenClaw user messages."""
     import re
-    text = re.sub(r'Conversation info \(untrusted metadata\):\s*\n```json\n\{[^`]+\}\n```\n?', '', text)
-    text = re.sub(r'Sender \(untrusted metadata\):\s*\n```json\n\{[^`]+\}\n```\n?', '', text)
+    # Remove "Conversation info (untrusted metadata): ... ```json {...} ```" block
+    text = re.sub(r'Conversation info \(untrusted metadata\):\s*\n```json\n\{.+?\}\n```\s*\n?', '', text, flags=re.DOTALL)
+    # Remove "Sender (untrusted metadata): ..." block
+    text = re.sub(r'Sender \(untrusted metadata\):\s*\n```json\n\{.+?\}\n```\s*\n?', '', text, flags=re.DOTALL)
+    # Remove "Relevant long-term memory from agentmemory: ..." blocks
+    text = re.sub(r'Relevant long-term memory from agentmemory:\s*\n- .+(\n- .+)*', '', text)
+    # Remove "System: [timestamp]" lines
     text = re.sub(r'System: \[\d{4}-\d{2}-\d{2}.*?\]\s*\n?', '', text)
+    # Remove [DS-SESSION-START] etc noise
+    text = re.sub(r'\[DS-SESSION-START\].*?\n?', '', text)
     return text.strip()
 
 def _parse_timestamp(ts_str: str) -> str:
