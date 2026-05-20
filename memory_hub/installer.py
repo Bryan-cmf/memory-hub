@@ -253,6 +253,7 @@ OPTIONAL_BACKENDS = {
     "chroma": {
         "name": "Chroma",
         "desc": "Lightweight vector DB (pip, no Docker)",
+        "default": True,
         "install": lambda: subprocess.run(
             [sys.executable, "-m", "pip", "install", "--break-system-packages", "--quiet", "chromadb"],
             capture_output=True, timeout=120
@@ -265,6 +266,7 @@ OPTIONAL_BACKENDS = {
     "lancedb": {
         "name": "LanceDB",
         "desc": "Embedded vector DB (pip, lightest)",
+        "default": True,
         "install": lambda: subprocess.run(
             [sys.executable, "-m", "pip", "install", "--break-system-packages", "--quiet", "lancedb"],
             capture_output=True, timeout=120
@@ -274,82 +276,180 @@ OPTIONAL_BACKENDS = {
             capture_output=True, timeout=10
         ).returncode == 0,
     },
+    "sqlite-vec": {
+        "name": "SQLite-vec",
+        "desc": "Vector search in SQLite (pip, single file)",
+        "default": True,
+        "install": lambda: subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--break-system-packages", "--quiet", "sqlite-vec"],
+            capture_output=True, timeout=60
+        ),
+        "verify": lambda: subprocess.run(
+            [sys.executable, "-m", "pip", "show", "sqlite-vec"],
+            capture_output=True, timeout=10
+        ).returncode == 0,
+    },
+    "faiss": {
+        "name": "FAISS (Meta)",
+        "desc": "Fast in-memory vector index (pip)",
+        "default": True,
+        "install": lambda: subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--break-system-packages", "--quiet", "faiss-cpu"],
+            capture_output=True, timeout=60
+        ),
+        "verify": lambda: subprocess.run(
+            [sys.executable, "-m", "pip", "show", "faiss-cpu"],
+            capture_output=True, timeout=10
+        ).returncode == 0,
+    },
+    "redis": {
+        "name": "Redis Stack",
+        "desc": "Cache + vector search (brew/apt)",
+        "default": True,
+        "install": lambda: install_redis(),
+        "verify": lambda: subprocess.run(["redis-cli", "ping"], capture_output=True, timeout=5).returncode == 0,
+    },
+    "pgvector": {
+        "name": "PostgreSQL + pgvector",
+        "desc": "Relational + vector (Docker)",
+        "default": True,
+        "install": lambda: install_pgvector(),
+        "verify": lambda: subprocess.run(["docker", "ps", "--filter", "name=mh-postgres", "--format", "{{.Status}}"], capture_output=True).stdout.decode().startswith("Up"),
+    },
+    "elasticsearch": {
+        "name": "Elasticsearch",
+        "desc": "Full-text + vector search (Docker)",
+        "default": True,
+        "install": lambda: install_elasticsearch(),
+        "verify": lambda: subprocess.run(["docker", "ps", "--filter", "name=mh-elasticsearch", "--format", "{{.Status}}"], capture_output=True).stdout.decode().startswith("Up"),
+    },
+    "mongodb": {
+        "name": "MongoDB",
+        "desc": "Document + vector storage (Docker)",
+        "default": True,
+        "install": lambda: install_mongodb(),
+        "verify": lambda: subprocess.run(["docker", "ps", "--filter", "name=mh-mongodb", "--format", "{{.Status}}"], capture_output=True).stdout.decode().startswith("Up"),
+    },
 }
 
 
-def install_optional():
-    """Interactive optional backend selection."""
-    section("⚡ Optional Backends")
+def install_redis():
+    """Start Redis via brew services."""
+    if subprocess.run(["redis-cli", "ping"], capture_output=True, timeout=5).returncode == 0:
+        return
+    subprocess.run(["brew", "services", "start", "redis"], capture_output=True, timeout=30)
 
-    print("  Select additional backends to install:\n")
+def install_pgvector():
+    """Start PostgreSQL+pgvector via Docker."""
+    docker = subprocess.run(["docker", "info"], capture_output=True)
+    if docker.returncode != 0: return
+    subprocess.run(["docker", "run", "-d", "--name", "mh-postgres", "-p", "5433:5432",
+                    "-e", "POSTGRES_PASSWORD=***", "pgvector/pgvector:pg17"],
+                   capture_output=True, timeout=120)
+
+def install_elasticsearch():
+    """Start Elasticsearch via Docker."""
+    docker = subprocess.run(["docker", "info"], capture_output=True)
+    if docker.returncode != 0: return
+    subprocess.run(["docker", "run", "-d", "--name", "mh-elasticsearch", "-p", "9200:9200",
+                    "-e", "discovery.type=single-node", "-e", "xpack.security.enabled=false",
+                    "elasticsearch:8.17.0"], capture_output=True, timeout=120)
+
+def install_mongodb():
+    """Start MongoDB via Docker."""
+    docker = subprocess.run(["docker", "info"], capture_output=True)
+    if docker.returncode != 0: return
+    subprocess.run(["docker", "run", "-d", "--name", "mh-mongodb", "-p", "27017:27017",
+                    "mongo:7"], capture_output=True, timeout=120)
+
+
+def install_optional():
+    """Interactive optional backend selection — all pre-checked as defaults."""
+    section("⚡ Storage Backends (9 pre-selected)")
+
+    print(f"  {dim('All backends are pre-selected as defaults. Press Enter to install all.')}")
+    print(f"  {dim('Uncheck any you want to skip, or press A to install all.')}\n")
 
     selected = {}
     keys = list(OPTIONAL_BACKENDS.keys())
+    # Pre-select all defaults
+    for key in keys:
+        if OPTIONAL_BACKENDS[key].get("default", False):
+            selected[key] = True
+
     for i, key in enumerate(keys, 1):
         info = OPTIONAL_BACKENDS[key]
+        checked = "[x]" if key in selected else "[ ]"
+        is_default = "(default)" if info.get("default") else ""
         try:
             if info["verify"]():
                 status = f"{G}(already installed){N}"
                 selected[key] = True
+                checked = f"{G}[x]{N}"
             else:
-                status = dim("(not installed)")
+                status = dim(is_default)
         except Exception:
-            status = dim("(not installed)")
+            status = dim(is_default)
 
-        print(f"  [{i}] {info['name']}")
+        print(f"  {checked} [{i}] {info['name']}")
         print(f"      {dim(info['desc'])} {status}")
         print()
 
-    print(f"  [A] Install ALL optional backends")
-    print(f"  [Enter] Skip, continue with core only")
+    print(f"  [A] Install ALL (default)")
+    print(f"  [Enter] Confirm and install selected")
+    print(f"  [Q] Skip all, core only")
     print()
 
     while True:
         try:
-            choice = input(f"  Your choice (1-{len(keys)}, A, Enter to skip): ").strip()
+            choice = input(f"  Your choice (1-{len(keys)} to toggle, A, Enter to confirm, Q to skip): ").strip()
             if not choice:
-                break
+                break  # Enter = confirm selected
             if choice.lower() == 'a':
                 for key in keys:
-                    if key in selected:
-                        print(f"  {dim(OPTIONAL_BACKENDS[key]['name'] + ' already installed')}")
-                        continue
-                    info = OPTIONAL_BACKENDS[key]
-                    print(f"  ⏳ Installing {info['name']}...")
-                    info["install"]()
-                    try:
-                        if info["verify"]():
-                            print(f"  {ok(info['name'] + ' installed')}")
-                            selected[key] = True
-                        else:
-                            print(f"  {warn(info['name'] + ': install OK but import check failed (may need restart)')}")
-                    except Exception as e:
-                        print(f"  {warn(info['name'] + ': verification failed — ' + str(e)[:80])}")
+                    selected[key] = True
+                print(f"  All 8 backends selected")
                 break
+            if choice.lower() == 'q':
+                selected.clear()
+                print(f"  Skipping all optional backends")
+                return
             idx = int(choice)
             if 1 <= idx <= len(keys):
                 key = keys[idx - 1]
-                info = OPTIONAL_BACKENDS[key]
                 if key in selected:
-                    print(f"  {dim(info['name'] + ' already installed')}")
+                    del selected[key]
+                    print(f"  [ ] {OPTIONAL_BACKENDS[key]['name']} — unchecked")
                 else:
-                    print(f"  ⏳ Installing {info['name']}...")
-                    info["install"]()
-                    try:
-                        if info["verify"]():
-                            print(f"  {ok(info['name'] + ' installed')}")
-                            selected[key] = True
-                        else:
-                            print(f"  {warn(info['name'] + ': install OK but import check failed (may need restart)')}")
-                    except Exception as e:
-                        print(f"  {warn(info['name'] + ': verification failed — ' + str(e)[:80])}")
-                break
+                    selected[key] = True
+                    print(f"  [x] {OPTIONAL_BACKENDS[key]['name']} — checked")
             else:
                 print(f"  {err('Invalid choice')}")
         except ValueError:
-            if choice.lower() == 'q':
-                break
-            print(f"  {err('Enter a number, A for all, or press Enter to skip')}")
+            print(f"  {err('Enter a number, A for all, Enter to confirm, Q to skip')}")
+
+    if not selected:
+        return
+
+    print(f"\n  Installing {len(selected)} backends...")
+    for key in keys:
+        if key not in selected:
+            continue
+        info = OPTIONAL_BACKENDS[key]
+        try:
+            if info["verify"]():
+                print(f"  {ok(info['name'] + ' already installed')}")
+                continue
+        except: pass
+        print(f"  ⏳ Installing {info['name']}...")
+        info["install"]()
+        try:
+            if info["verify"]():
+                print(f"  {ok(info['name'] + ' installed')}")
+            else:
+                print(f"  {warn(info['name'] + ': install OK but not running yet (may need manual start)')}")
+        except Exception as e:
+            print(f"  {warn(info['name'] + ': ' + str(e)[:80])}")
 
 
 # ── MCP Configuration ─────────────────────────────
