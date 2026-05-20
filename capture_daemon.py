@@ -260,18 +260,28 @@ def _file_save(pid: str, msg: dict):
         f.write(json.dumps(msg, ensure_ascii=False) + "\n")
 
 def _clean_content(text: str) -> str:
-    """Strip Conversation info metadata from OpenClaw user messages."""
+    """Strip metadata blocks, keep only the real user message."""
     import re
-    # Remove "Conversation info (untrusted metadata): ... ```json {...} ```" block
+    # Remove Conversation info block
     text = re.sub(r'Conversation info \(untrusted metadata\):\s*\n```json\n\{.+?\}\n```\s*\n?', '', text, flags=re.DOTALL)
-    # Remove "Sender (untrusted metadata): ..." block
+    # Remove Sender metadata block
     text = re.sub(r'Sender \(untrusted metadata\):\s*\n```json\n\{.+?\}\n```\s*\n?', '', text, flags=re.DOTALL)
-    # Remove "Relevant long-term memory from agentmemory: ..." blocks
-    text = re.sub(r'Relevant long-term memory from agentmemory:\s*\n- .+(\n- .+)*', '', text)
-    # Remove "System: [timestamp]" lines
-    text = re.sub(r'System: \[\d{4}-\d{2}-\d{2}.*?\]\s*\n?', '', text)
-    # Remove [DS-SESSION-START] etc noise
+    # "Relevant long-term memory" is injected context — keep only what's BEFORE it
+    if 'Relevant long-term memory from agentmemory:' in text:
+        before, _ = text.split('Relevant long-term memory from agentmemory:', 1)
+        text = before
+    # Remove "System: ..." lines
+    text = re.sub(r'^System: \[.+?\].*?\n?', '', text, flags=re.MULTILINE)
+    # Remove leftover markdown table/header lines
+    text = re.sub(r'^(?:\|.*\||[-|]{3,}.*|> .*|#+ .*)\n?', '', text, flags=re.MULTILINE)
+    # Remove [DS-SESSION-START] noise
     text = re.sub(r'\[DS-SESSION-START\].*?\n?', '', text)
+    # Remove blank lines at start
+    while text.startswith('\n'):
+        text = text[1:]
+    # Collapse multiple blank lines
+    while '\n\n\n' in text:
+        text = text.replace('\n\n\n', '\n\n')
     return text.strip()
 
 def _parse_timestamp(ts_str: str) -> str:
