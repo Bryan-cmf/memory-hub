@@ -23,11 +23,20 @@ def status_detail():
     # ── 1. All Databases ──
     print(f"{B}🗄️  All Storage Backends{N}")
     print(f"  {'─'*56}")
+    # Try fetching from daemon API first, fall back to local
     try:
-        from memory_hub.sync_engine import get_all_stats
-        stats = get_all_stats()
+        import urllib.request, json
+        req = urllib.request.Request("http://localhost:3872/api/databases", method="GET")
+        resp = urllib.request.urlopen(req, timeout=5)
+        stats = json.loads(resp.read())
+        if "error" in stats:
+            raise Exception(stats["error"])
     except Exception:
-        stats = {}
+        try:
+            from memory_hub.sync_engine import get_all_stats
+            stats = get_all_stats()
+        except Exception:
+            stats = {}
 
     # File Storage
     fs = stats.get("file", {})
