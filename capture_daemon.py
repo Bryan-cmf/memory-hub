@@ -126,9 +126,16 @@ def _scan_file(fp: Path, pid: str, last_offset: int = 0):
                         role = msg.get("role", "")
                         content = msg.get("content")
                     if role in ("user","assistant") and content:
+                        # Extract channel + session metadata (P0-1, P0-2)
+                        channel = _extract_channel(msg, pid, str(content))
+                        session_id = msg.get("sessionId", msg.get("session_id", fp.stem))
+                        mem_type = _classify_memory(role, str(content))
+                        importance = _score_importance(pid, channel, role, str(content))
                         msgs.append({"platform":pid,"role":role,
                             "content":str(content)[:300],"timestamp":msg.get("timestamp",""),
-                            "mode":"B_scan","source_file":str(fp)})
+                            "mode":"B_scan","source_file":str(fp),
+                            "channel":channel,"session_id":str(session_id)[:80],
+                            "memory_type":mem_type,"importance":importance})
                 except json.JSONDecodeError: continue
         return msgs, fsize
     except (OSError,UnicodeDecodeError) as e:
@@ -180,10 +187,15 @@ def _scan_deepseek_checkpoint(fp: Path, pid: str, last_count: int = 0) -> list:
                     else:
                         content = raw_content
                     if role in ("user","assistant") and content:
+                        channel = "deepseek-tui"
+                        mem_type = _classify_memory(role, str(content))
+                        importance = _score_importance("deepseek", channel, role, str(content))
                         msgs.append({"platform":pid,"role":str(role),
                             "content":str(content)[:300],
                             "timestamp":turn.get("timestamp",datetime.now(HKT).isoformat()),
-                            "mode":"B_scan","source_file":str(fp)})
+                            "mode":"B_scan","source_file":str(fp),
+                            "channel":channel,"session_id":fp.stem,
+                            "memory_type":mem_type,"importance":importance})
         return msgs, len(turns) if turns else 0
     except Exception: return [], last_count
 
@@ -198,10 +210,14 @@ def _scan_claude_markdown(fp: Path, pid: str, last_mtime: float = 0) -> list:
         title = fp.stem.replace("-"," ").replace("_"," ")
         body = content[:500]
         if body.strip():
+            mem_type = _classify_memory("assistant", body)
+            importance = _score_importance(pid, "claude-code", "assistant", body)
             msgs.append({"platform":pid,"role":"assistant",
                 "content":f"[{title}] {body[:300]}",
                 "timestamp":datetime.fromtimestamp(current_mtime,HKT).isoformat(),
-                "mode":"B_scan","source_file":str(fp)})
+                "mode":"B_scan","source_file":str(fp),
+                "channel":"claude-code","session_id":fp.stem,
+                "memory_type":mem_type,"importance":importance})
         return msgs, current_mtime
     except Exception: return [], last_mtime
 
@@ -211,10 +227,17 @@ def _process(pid: str, msg: dict):
     pf["captured"] += 1
     pf["last_at"] = msg.get("timestamp") or msg.get("captured_at") or ""
     pf["last_preview"] = str(msg.get("content",""))[:80]
+    channel = msg.get("channel","unknown")
+    if "channels" not in pf: pf["channels"] = {}
+    pf["channels"][channel] = pf["channels"].get(channel, 0) + 1
     STATE["recent"].append({
         "platform": PLATFORMS[pid]["icon"]+" "+PLATFORMS[pid]["name"],
         "role": msg["role"], "content": str(msg.get("content",""))[:150],
-        "time": (pf["last_at"] or "")[:19]
+        "time": (pf["last_at"] or "")[:19],
+        "channel": channel,
+        "memory_type": msg.get("memory_type","conversation"),
+        "importance": msg.get("importance", 5),
+        "session_id": msg.get("session_id",""),
     })
     if len(STATE["recent"]) > 200: STATE["recent"] = STATE["recent"][-200:]
 
@@ -224,6 +247,145 @@ def _file_save(pid: str, msg: dict):
     day = datetime.now().strftime("%d")
     with open(d / f"{day}.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(msg, ensure_ascii=False) + "\n")
+
+# ── P0-1: Channel extraction ──────────────────────
+
+def _extract_channel(msg: dict, pid: str, content: str) -> str:
+    """Extract communication channel from message metadata."""
+    cl = content.lower()
+    # OpenClaw format: check for chat_id channel routing
+    if pid == "openclaw":
+        if "chat_id" in cl and ("wechat" in cl or "weixin" in cl or "o9cq80" in cl):
+            return "wechat"
+        if "chat_id" in cl and "whatsapp" in cl:
+            return "whatsapp"
+        if "feishu" in cl or "im.feishu" in cl:
+            return "feishu"
+        # Check inner content for channel markers
+        inner = msg.get("message", {})
+        content_list = inner.get("content", [])
+        if isinstance(content_list, list):
+            for block in content_list:
+                if isinstance(block, dict):
+                    t = block.get("text","")
+                    if "wechat" in t.lower() or "weixin" in t.lower():
+                        return "wechat"
+                    if "whatsapp" in t.lower():
+                        return "whatsapp"
+        return "feishu-dm"
+    elif pid == "hermes":
+        return "hermes-agent"
+    elif pid == "deepseek":
+        return "deepseek-tui"
+    elif pid == "claude":
+        return "claude-code"
+    return "unknown"
+
+
+# ── P1-2: Memory classification ───────────────────
+
+DECISION_KEYWORDS = ["決定","選擇","採用","改用","確認","批准","同意","決定用","decided","chose"]
+LESSON_KEYWORDS = ["踩坑","教訓","錯誤","修復","bug","問題是","根因","lesson","pitfall","不要"]
+TASK_KEYWORDS = ["待辦","todo","task","需要做","跟進","處理","完成","指派"]
+FACT_KEYWORDS = ["數據","報價","營收","持股","股東","財報","公告","data","revenue","report"]
+
+def _classify_memory(role: str, content: str) -> str:
+    """Auto-classify memory into type: decision/lesson/task/fact/conversation."""
+    lower = content.lower()
+    scores = {"decision": 0, "lesson": 0, "task": 0, "fact": 0}
+    for kw in DECISION_KEYWORDS:
+        if kw in lower: scores["decision"] += 1
+    for kw in LESSON_KEYWORDS:
+        if kw in lower: scores["lesson"] += 1
+    for kw in TASK_KEYWORDS:
+        if kw in lower: scores["task"] += 1
+    for kw in FACT_KEYWORDS:
+        if kw in lower: scores["fact"] += 1
+    best = max(scores, key=scores.get)
+    return best if scores[best] > 0 else "conversation"
+
+
+# ── P1-3: Importance scoring ──────────────────────
+
+def _score_importance(pid: str, channel: str, role: str, content: str) -> int:
+    """Score memory importance 0-10 based on signals."""
+    score = 5  # Default neutral
+    # Platform boost
+    if pid == "openclaw": score += 1  # Main workspace
+    # Channel boost
+    if channel == "feishu-dm": score += 2  # Direct conversation with boss
+    elif channel in ("wechat", "whatsapp"): score += 1
+    # Role boost
+    if role == "user": score += 1  # User messages are directives
+    # Content signals
+    lower = content.lower()
+    if any(kw in lower for kw in ["pdf","報告","report","分析"]): score += 2
+    if any(kw in lower for kw in ["urgent","緊急","重要","重要事項"]): score += 2
+    if len(content) > 200: score += 1  # Substantial content
+    return min(10, max(0, score))
+
+
+# ── P2-1: MEMORY.md auto-index ────────────────────
+
+MEMORY_INDEX_INTERVAL = 3600  # Generate every hour
+_last_index_time = 0
+
+def generate_memory_index():
+    """Auto-generate MEMORY.md index from recent captures."""
+    global _last_index_time
+    now = time.time()
+    if now - _last_index_time < MEMORY_INDEX_INTERVAL:
+        return
+    _last_index_time = now
+    index_path = MH_DIR / "MEMORY.md"
+    recent = list(STATE["recent"])[-100:]
+    if not recent:
+        return
+    lines = [
+        f"# 🧠 MemoryHub Auto-Index",
+        f"_Generated: {datetime.now(HKT).strftime('%Y-%m-%d %H:%M')} HKT_",
+        f"_Total captures this session: {STATE['total_captured']}_\n",
+        "## 📊 Channel Summary\n",
+    ]
+    # Aggregate channels
+    from collections import defaultdict
+    channels = defaultdict(lambda: defaultdict(int))
+    for m in recent:
+        ch = m.get("channel","unknown")
+        mt = m.get("memory_type","conversation")
+        channels[ch][mt] += 1
+    for ch, types in sorted(channels.items()):
+        lines.append(f"- **{ch}**: {sum(types.values())} captures")
+        for mt, cnt in sorted(types.items()):
+            lines.append(f"  - {mt}: {cnt}")
+    
+    # Top decisions
+    decisions = [m for m in recent if m.get("memory_type") == "decision"]
+    if decisions:
+        lines.append(f"\n## 💡 Recent Decisions\n")
+        for m in decisions[-5:]:
+            preview = str(m.get("content",""))[:120]
+            lines.append(f"- [{m.get('channel','')}] {preview}")
+    
+    # Top lessons
+    lessons = [m for m in recent if m.get("memory_type") == "lesson"]
+    if lessons:
+        lines.append(f"\n## 📝 Lessons Learned\n")
+        for m in lessons[-5:]:
+            preview = str(m.get("content",""))[:120]
+            lines.append(f"- [{m.get('channel','')}] {preview}")
+    
+    # High-importance items
+    important = [m for m in recent if m.get("importance", 0) >= 7]
+    if important:
+        lines.append(f"\n## ⭐ High-Importance Memories\n")
+        for m in important[-10:]:
+            preview = str(m.get("content",""))[:100]
+            imp = m.get("importance",5)
+            lines.append(f"- ⭐{imp} [{m.get('channel','')}] {preview}")
+    
+    index_path.write_text("\n".join(lines), encoding="utf-8")
+
 
 def run_scan_cycle():
     offsets = {}
@@ -260,11 +422,17 @@ def run_scan_cycle():
     # H3.4 checkpoint
     cp = {"timestamp":datetime.now(HKT).isoformat(),"total":STATE["total_captured"]}
     (MH_DIR / ".capture_checkpoint.json").write_text(json.dumps(cp,ensure_ascii=False),encoding="utf-8")
+    # P2-1: Auto-generate MEMORY.md index
+    generate_memory_index()
     return new_total
 
 def unified_search(query, limit=10):
-    """Search across all captured memories (file layer)."""
-    results = []
+    """Search across all captured memories with weighted scoring (P1-4)."""
+    scored = []
+    import re
+    tokens = re.findall(r'[\w]+', query.lower())
+    if not tokens:
+        return {"query":query,"total":0,"results":[]}
     for d in [CAPTURE_DIR, MH_DIR/"memories", HOOK_LOG_DIR]:
         if not d.exists(): continue
         files = []
@@ -278,21 +446,39 @@ def unified_search(query, limit=10):
                         try:
                             data = json.loads(line)
                             content = str(data.get("content",""))
-                            if query.lower() in content.lower():
-                                results.append({"source":"capture","content":content[:200],
-                                    "platform":data.get("platform",""),"tags":data.get("tags",[])})
-                                if len(results) >= limit: break
+                            lower = content.lower()
+                            if any(t in lower for t in tokens):
+                                # Weighted scoring: metadata 2x, body 1x, importance boost
+                                channel = str(data.get("channel",""))
+                                mtype = str(data.get("memory_type",""))
+                                body_hits = sum(1 for t in tokens if t in lower)
+                                meta_hits = sum(1 for t in tokens if t in (channel+mtype).lower())
+                                imp = int(data.get("importance", 5))
+                                score = meta_hits * 2.0 + body_hits * 1.0 + imp * 0.3
+                                scored.append((score, {
+                                    "source":"capture","content":content[:200],
+                                    "platform":data.get("platform",""),
+                                    "channel":channel,"memory_type":mtype,
+                                    "importance":imp,"tags":data.get("tags",[])
+                                }))
+                                if len(scored) >= limit * 3: break
                         except: continue
                 else:
                     data = json.loads(f.read_text(encoding="utf-8"))
                     content = str(data.get("content",""))
-                    if query.lower() in content.lower():
-                        results.append({"source":"file","content":content[:200],
-                                        "platform":data.get("platform",""),"tags":data.get("tags",[])})
-                if len(results) >= limit: break
+                    lower = content.lower()
+                    if any(t in lower for t in tokens):
+                        channel = str(data.get("channel",""))
+                        mtype = str(data.get("memory_type",""))
+                        meta_hits = sum(1 for t in tokens if t in (channel+mtype).lower())
+                        scored.append((meta_hits, {"source":"file","content":content[:200],
+                            "platform":data.get("platform",""),"channel":channel,
+                            "memory_type":mtype,"tags":data.get("tags",[])}))
+                if len(scored) >= limit * 5: break
             except Exception: continue
-        if len(results) >= limit: break
-    return {"query":query,"total":len(results),"results":results[:limit]}
+        if len(scored) >= limit * 5: break
+    scored.sort(key=lambda x: -x[0])
+    return {"query":query,"total":len(scored),"results":[r for _,r in scored[:limit]]}
 
 # ═══════════════════════════════════════════════════
 # Auto-start services
@@ -427,7 +613,7 @@ h1{font-size:1.4em;color:var(--blue)}.sub{color:var(--muted);font-size:.75em}
 <div class="stat"><div class="v" id="qt">0</div><div class="l">Qdrant Points</div></div>
 <div class="stat"><div class="v" id="up">-</div><div class="l">Uptime</div></div>
 </div>
-<div class="search"><input id="sq" placeholder="Search all captured memories..." onkeydown="if(event.key=='Enter')doSearch()"><button onclick="doSearch()">🔍 Search</button></div>
+<div class="search"><input id="sq" placeholder="Search all captured memories..." onkeydown="if(event.key=='Enter')doSearch()"><select id="chFilter" onchange="applyFilter()" style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-size:.85em"><option value="all">All Channels</option></select><button onclick="doSearch()">🔍 Search</button></div>
 <div class="main">
 <div class="panel"><h2>📡 Platform Status <span class="badge" id="scanInfo">-</span></h2><div class="cards" id="cards">LOADING...</div></div>
 <div class="panel"><h2>📊 Capture History <span class="badge" id="chartLabel">24h</span></h2>
@@ -460,11 +646,26 @@ document.getElementById('scanInfo').textContent='⏱ '+(state.last_scan||'').sli
 // Live feed
 let msgs=(state.recent||[]).slice(-40).reverse()
 document.getElementById('feedCount').textContent=msgs.length
-document.getElementById('flow').innerHTML=msgs.map(m=>{
+let chFilter=document.getElementById('chFilter').value
+document.getElementById('flow').innerHTML=msgs.filter(m=>chFilter=='all'||m.channel==chFilter).map(m=>{
 let rc=m.role||'',cls=rc=='user'?'u':rc=='assistant'?'a':'m',icon=rc=='user'?'👉':rc=='assistant'?'🤖':'📌'
-return`<div class="msg"><span class="mt">${(m.time||'').slice(11,19)}</span><span class="mp">${m.platform||''}</span><span class="mr ${cls}">${icon}</span><span class="mc">${(m.content||'').substring(0,120)}</span></div>`}).join('')
+let mt=m.memory_type||'',mtIcon=mt=='decision'?'💡':mt=='lesson'?'📝':mt=='task'?'📋':mt=='fact'?'📊':''
+let imp=m.importance||0,impStars=imp>=8?'⭐⭐':imp>=6?'⭐':''
+return`<div class="msg"><span class="mt">${(m.time||'').slice(11,19)}</span><span class="mp">${m.platform||''}</span><span class="mr ${cls}">${icon}</span><span class="mc">${mtIcon}${impStars}${(m.content||'').substring(0,100)}</span></div>`}).join('')
+// Populate channel filter
+fetch('/api/channels').then(r=>r.json()).then(channels=>{
+let sel=document.getElementById('chFilter'),cur=sel.value
+sel.innerHTML='<option value="all">All Channels</option>'
+Object.entries(channels).sort((a,b)=>b[1].total-a[1].total).forEach(([ch,stats])=>{
+let opt=document.createElement('option');opt.value=ch
+opt.textContent=`${ch} (${stats.recent||stats.total||0})`
+sel.appendChild(opt)
+})
+sel.value=cur
+}).catch(()=>{})
 drawChart()}).catch(()=>{})
 setTimeout(r,3000)}
+function applyFilter(){r()}
 function drawChart(){
 let c=document.getElementById('chart'),ctx=c.getContext('2d'),w=c.offsetWidth,h=c.offsetHeight
 ctx.clearRect(0,0,w,h)
@@ -575,6 +776,22 @@ class DH(BaseHTTPRequestHandler):
             self.send_response(200);self.send_header("Content-Type","application/json")
             self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
             self.wfile.write(json.dumps(cols,ensure_ascii=False).encode())
+        elif p=="/api/channels":
+            # P0-3: Aggregate channel stats
+            from collections import defaultdict
+            ch_stats = defaultdict(lambda: defaultdict(int))
+            for pid in STATE["platforms"]:
+                pf = STATE["platforms"][pid]
+                for ch, cnt in pf.get("channels", {}).items():
+                    ch_stats[ch][f"{pid}_count"] = cnt
+                    ch_stats[ch]["total"] = ch_stats[ch].get("total", 0) + cnt
+            # Also from recent for breakdown
+            for m in STATE["recent"]:
+                ch = m.get("channel","unknown")
+                ch_stats[ch]["recent"] = ch_stats[ch].get("recent", 0) + 1
+            self.send_response(200);self.send_header("Content-Type","application/json")
+            self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
+            self.wfile.write(json.dumps(dict(ch_stats),ensure_ascii=False).encode())
         else:
             self.send_response(404);self.end_headers()
 
@@ -584,14 +801,22 @@ class DH(BaseHTTPRequestHandler):
             try:
                 body=json.loads(self.rfile.read(int(self.headers.get("Content-Length",0))))
                 pid=body.get("platform","unknown")
-                msg={"platform":pid,"role":body.get("role","unknown"),
-                     "content":str(body.get("content",""))[:300],
-                     "timestamp":datetime.now(HKT).isoformat()}
+                content=str(body.get("content",""))[:300]
+                role=body.get("role","unknown")
+                channel = body.get("channel") or _extract_channel(body, pid, content)
+                mem_type = _classify_memory(role, content)
+                importance = _score_importance(pid, channel, role, content)
+                msg={"platform":pid,"role":role,
+                     "content":content,
+                     "timestamp":datetime.now(HKT).isoformat(),
+                     "channel":channel,"memory_type":mem_type,
+                     "importance":importance,"session_id":"mcp-hook"}
                 _process(pid,msg)
                 _file_save(pid,msg)
                 STATE["mode_a_count"] += 1
                 self.send_response(200);self.send_header("Content-Type","application/json");self.end_headers()
-                self.wfile.write(json.dumps({"status":"captured"}).encode())
+                self.wfile.write(json.dumps({"status":"captured","channel":channel,
+                    "memory_type":mem_type,"importance":importance}).encode())
             except Exception as e:
                 self.send_response(400);self.send_header("Content-Type","application/json");self.end_headers()
                 self.wfile.write(json.dumps({"error":str(e)}).encode())

@@ -15,7 +15,9 @@ _em=None;_qc=None
 def _notify_daemon(platform: str, content: str, role: str = "mcp_intercept"):
     """Notify capture daemon via /hook endpoint (Mode A)."""
     try:
-        data = json.dumps({"platform":platform,"role":role,"content":str(content)[:300]}).encode()
+        channel = f"{platform}-mcp" if platform else "mcp"
+        data = json.dumps({"platform":platform,"role":role,
+                          "content":str(content)[:300],"channel":channel}).encode()
         req = urllib.request.Request(DAEMON_HOOK, data=data, method="POST",
                                      headers={"Content-Type":"application/json"})
         urllib.request.urlopen(req, timeout=2)
