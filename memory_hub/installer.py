@@ -472,16 +472,17 @@ def post_install_verify():
 
     checks = []
 
-    # Qdrant
+    # Qdrant — check /collections (more reliable than /health)
     try:
         import urllib.request
-        req = urllib.request.Request("http://localhost:6333/health", method="GET")
-        resp = urllib.request.urlopen(req, timeout=3)
+        req = urllib.request.Request("http://localhost:6333/collections", method="GET")
+        resp = urllib.request.urlopen(req, timeout=5)
         d = json.loads(resp.read())
-        ok = d.get("status") == "green" or d.get("title") == "qdrant"
-        checks.append(("Qdrant", ok, ":6333" if ok else "not responding"))
-    except Exception:
-        checks.append(("Qdrant", False, "not responding"))
+        cols = d.get("result", {}).get("collections", [])
+        ok = len(cols) > 0
+        checks.append(("Qdrant", ok, f"{len(cols)} collections" if ok else "not responding"))
+    except Exception as e:
+        checks.append(("Qdrant", False, f"not responding ({str(e)[:40]})"))
 
     # Daemon
     try:
