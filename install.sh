@@ -31,14 +31,24 @@ def main():
         sys.exit(1)
     print(f"   ✅ Cloned to {tmp}")
 
-    # 3. pip install
+    # 3. pip install (handle externally-managed env)
     print(f"   📦 Installing...")
-    r = subprocess.run(
-        [sys.executable, "-m", "pip", "install", str(tmp), "--quiet"],
-        capture_output=True, text=True
-    )
-    if r.returncode != 0:
-        print(f"   ❌ Install failed: {r.stderr[:300]}")
+    install_cmds = [
+        [sys.executable, "-m", "pip", "install", str(tmp), "--user", "--quiet"],
+        [sys.executable, "-m", "pip", "install", str(tmp), "--break-system-packages", "--quiet"],
+    ]
+    installed = False
+    for cmd in install_cmds:
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        if r.returncode == 0:
+            installed = True
+            break
+        if "externally-managed" not in r.stderr:
+            print(f"   ❌ Install failed: {r.stderr[:300]}")
+            sys.exit(1)
+    if not installed:
+        print(f"   ❌ All install methods failed. Try manually:")
+        print(f"      {sys.executable} -m pip install --user {tmp}")
         sys.exit(1)
     print(f"   ✅ Installed")
 
