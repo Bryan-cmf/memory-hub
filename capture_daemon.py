@@ -24,7 +24,7 @@ PLATFORMS = {
                   "patterns":["*/sessions/*.jsonl"],"collection":"openclaw_mem"},
     "hermes":    {"icon":"🪽","name":"Hermes Agent",
                   "paths":["~/.hermes/sessions/"],
-                  "patterns":["*.json"],"collection":"hermes_mem"},
+                  "patterns":["*.jsonl","*.json"],"collection":"hermes_mem"},
     "deepseek":  {"icon":"🐋","name":"DeepSeek TUI",
                   "paths":["~/.deepseek/sessions/"],
                   "patterns":["*.json"],"collection":"deepseek_mem"},
