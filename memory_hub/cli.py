@@ -19,9 +19,9 @@ def cmd_start(args):
     daemon.run_daemon(HUB_PORT=port)
 
 def cmd_status(args):
-    """Show system status."""
-    from .verify import run_verify
-    run_verify()
+    """Show rich system status."""
+    from .verify import status_detail
+    status_detail()
 
 def cmd_stop(args):
     """Stop the capture daemon."""

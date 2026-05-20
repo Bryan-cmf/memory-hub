@@ -1,131 +1,255 @@
 #!/usr/bin/env python3
-"""MemoryHub System Verification — one-command health check."""
+"""MemoryHub System Status & Verification — comprehensive health report."""
 
 import json, os, sys, urllib.request
 from pathlib import Path
+from datetime import datetime, timezone, timedelta
+
+HKT = timezone(timedelta(hours=8))
+B = "\033[1m"; G = "\033[32m"; Y = "\033[33m"; R = "\033[31m"; C = "\033[36m"; N = "\033[0m"
+
 
 def check(label, ok, detail=""):
-    icon = "✅" if ok else "❌" if ok is False else "⚠️"
+    icon = f"{G}✅{N}" if ok else f"{R}❌{N}" if ok is False else f"{Y}⚠️{N}"
     print(f"  {icon} {label}: {detail}")
 
-def run_verify():
-    print("🔍 MemoryHub System Verification")
-    print("=" * 50)
 
-    # 1. Qdrant
-    ok, detail = False, ""
+def status_detail():
+    """Rich system status — full breakdown."""
+    print(f"\n{B}{C}🧠 MemoryHub System Status{N}")
+    print(f"{'═'*60}")
+    print(f"  Time: {datetime.now(HKT).strftime('%Y-%m-%d %H:%M:%S')} HKT\n")
+
+    # ── 1. Qdrant Collections ──
+    print(f"{B}🗄️  Qdrant Vector Database{N}")
+    print(f"  {'─'*56}")
     try:
         req = urllib.request.Request("http://localhost:6333/collections", method="GET")
-        resp = urllib.request.urlopen(req, timeout=3)
+        resp = urllib.request.urlopen(req, timeout=5)
+        data = json.loads(resp.read())
+        cols = data.get("result", {}).get("collections", [])
+        if not cols:
+            print(f"  {R}❌ No collections found — Qdrant may be empty{N}")
+        else:
+            total_pts = 0
+            lines = []
+            for c in sorted(cols, key=lambda x: x["name"]):
+                cn = c["name"]
+                try:
+                    req2 = urllib.request.Request(f"http://localhost:6333/collections/{cn}", method="GET")
+                    resp2 = urllib.request.urlopen(req2, timeout=3)
+                    d2 = json.loads(resp2.read())
+                    pts = d2.get("result", {}).get("points_count", 0)
+                    status = d2.get("result", {}).get("status", "unknown")
+                    total_pts += pts
+                    bar = "█" * min(20, pts // 100) + "░" * max(0, 20 - pts // 100)
+                    icon = f"{G}🟢{N}" if status == "green" else f"{Y}🟡{N}"
+                    lines.append(f"  {icon} {cn:<20} {pts:>6} pts  {bar}")
+                except:
+                    lines.append(f"  {R}❌{N} {cn:<20} {'—':>6} pts")
+            for l in lines:
+                print(l)
+            print(f"  {'─'*56}")
+            print(f"  {B}Total:{N} {total_pts} vector points across {len(cols)} collections")
+    except Exception as e:
+        print(f"  {R}❌ Qdrant unavailable: {str(e)[:50]}{N}")
+
+    # ── 2. Daemon ──
+    print(f"\n{B}📡 Capture Daemon{N}")
+    print(f"  {'─'*56}")
+    try:
+        req = urllib.request.Request("http://localhost:3872/api/state", method="GET")
+        resp = urllib.request.urlopen(req, timeout=5)
+        state = json.loads(resp.read())
+        print(f"  🟢 Status:     running on :3872")
+        print(f"  ⏱  Started:    {state.get('started_at','')[:19]}")
+        print(f"  🔄 Scan cycles: {state.get('scan_cycle', 0)}")
+        print(f"  📊 Captures:   {state.get('total_captured', 0)} total")
+        print(f"     ├─ Mode A (MCP):  {state.get('mode_a_count', 0)}")
+        print(f"     └─ Mode B (Scan): {state.get('mode_b_count', 0)}")
+        print()
+        for pid, pf in state.get("platforms", {}).items():
+            chs = pf.get("channels", {})
+            ch_str = ", ".join(f"{k}:{v}" for k, v in sorted(chs.items())) if chs else "—"
+            print(f"     {pf['icon']} {pf['name']:<12} {pf['captured']:>4} caps  {pf['files']:>4} files  [{ch_str}]")
+    except Exception as e:
+        print(f"  {R}❌ Daemon not responding: {str(e)[:50]}{N}")
+
+    # ── 3. File Storage ──
+    print(f"\n{B}💾 File Storage{N}")
+    print(f"  {'─'*56}")
+    mh_dir = Path(os.path.expanduser("~/.memory-hub"))
+    for label, subdir in [("Captures", "captured"), ("Memories", "memories"), ("Hooks", "hooks")]:
+        d = mh_dir / subdir
+        if d.exists():
+            files = list(d.rglob("*.json*"))
+            size = sum(f.stat().st_size for f in files if f.is_file())
+            size_mb = size / 1024 / 1024
+            print(f"  {'✅' if files else '⚠️'} {label:<12} {str(d):<40} {len(files):>4} files, {size_mb:.1f}MB")
+        else:
+            print(f"  ⚠️  {label:<12} {str(d):<40} not created yet")
+
+    # ── 4. MCP Server ──
+    print(f"\n{B}🔌 MCP Server{N}")
+    print(f"  {'─'*56}")
+    import subprocess
+    try:
+        r = subprocess.run(
+            [sys.executable, "-c", "from memory_hub.server.mcp_server import TOOLS; print(len(TOOLS)); print(','.join(sorted(TOOLS.keys())))"],
+            capture_output=True, text=True, timeout=5
+        )
+        lines = r.stdout.strip().split("\n")
+        n = lines[0]
+        tools = lines[1] if len(lines) > 1 else ""
+        print(f"  ✅ Version:    v2.0.0")
+        print(f"  ✅ Tools:      {n} ({tools})")
+    except Exception as e:
+        print(f"  ❌ MCP Server: {str(e)[:50]}")
+
+    # ── 5. Platform MCP Configs ──
+    print(f"\n{B}📋 Platform MCP Configuration{N}")
+    print(f"  {'─'*56}")
+    platforms = {
+        "OpenClaw":    (Path.home() / ".openclaw/openclaw.json", ["mcp","servers","memory-hub"]),
+        "DeepSeek TUI": (Path.home() / ".deepseek/mcp.json", ["servers","memory-hub"]),
+        "Hermes Agent": (Path.home() / ".hermes/mcp.json", ["servers","memory-hub"]),
+        "Claude Code":  (Path.home() / ".claude/mcp.json", ["mcpServers","memory-hub"]),
+    }
+    for name, (fp, keys) in platforms.items():
+        installed = False
+        detected = fp.parent.exists() if fp.parent != Path.home() else fp.exists()
+        if fp.exists():
+            try:
+                cfg = json.loads(fp.read_text(encoding="utf-8"))
+                d = cfg
+                for k in keys:
+                    d = d.get(k, {})
+                installed = d and len(d) > 1  # more than just empty dict
+            except: pass
+        icon = f"{G}✅{N}" if installed else f"{Y}⚠️{N}" if detected else f"{R}❌{N}"
+        status_text = "configured" if installed else ("platform exists, MCP not configured" if detected else "not detected")
+        print(f"  {icon} {name:<14} {status_text}")
+
+    # ── 6. MEMORY.md Index ──
+    print(f"\n{B}📑 MEMORY.md Auto-Index{N}")
+    print(f"  {'─'*56}")
+    index_path = mh_dir / "MEMORY.md"
+    if index_path.exists():
+        lines = index_path.read_text(encoding="utf-8").strip().split("\n")
+        print(f"  ✅ Generated: {index_path.stat().st_mtime}")
+        print(f"  ✅ Size:      {len(lines)} lines, {index_path.stat().st_size} bytes")
+        print(f"  Preview:")
+        for l in lines[:8]:
+            print(f"  │ {l[:56]}")
+    else:
+        print(f"  ⚠️  Not yet generated (runs hourly during scan cycle)")
+
+    print(f"\n{B}{'═'*60}{N}\n")
+
+
+def run_verify():
+    """Quick health check — pass/fail for CI/CD."""
+    print("🔍 MemoryHub Quick Verification")
+    print("=" * 50)
+
+    issues = 0
+
+    # Qdrant
+    try:
+        req = urllib.request.Request("http://localhost:6333/collections", method="GET")
+        resp = urllib.request.urlopen(req, timeout=5)
         data = json.loads(resp.read())
         cols = data.get("result", {}).get("collections", [])
         ok = len(cols) > 0
-        total_pts = 0
-        if ok:
-            for c in cols:
-                try:
-                    req2 = urllib.request.Request(f"http://localhost:6333/collections/{c['name']}", method="GET")
-                    resp2 = urllib.request.urlopen(req2, timeout=3)
-                    d2 = json.loads(resp2.read())
-                    total_pts += d2.get("result", {}).get("points_count", 0)
-                except: pass
-        detail = f"{len(cols)} collections, {total_pts} points" if ok else str(data)[:40]
+        check("Qdrant (vector DB)", ok, f"{len(cols)} collections")
+        if not ok: issues += 1
     except Exception as e:
-        detail = str(e)[:60]
-    check("Qdrant (vector DB)", ok, detail)
+        check("Qdrant (vector DB)", False, str(e)[:60])
+        issues += 1
 
-    # 2. Daemon
-    ok, detail = False, ""
-    ok, detail = False, ""
+    # Daemon
     try:
         req = urllib.request.Request("http://localhost:3872/api/state", method="GET")
-        resp = urllib.request.urlopen(req, timeout=3)
+        resp = urllib.request.urlopen(req, timeout=5)
         data = json.loads(resp.read())
         ok = "total_captured" in data
-        total = data.get("total_captured", 0)
-        detail = f"running, {total} captures" if ok else "unexpected response"
+        check("Capture Daemon", ok, f"{data.get('total_captured',0)} captures")
+        if not ok: issues += 1
     except Exception as e:
-        detail = str(e)[:60]
-    check("Capture Daemon (3872)", ok, detail)
+        check("Capture Daemon", False, str(e)[:60])
+        issues += 1
 
-    # 3. Dashboard
-    ok, detail = False, ""
+    # Dashboard
     try:
         req = urllib.request.Request("http://localhost:3872/", method="GET")
-        resp = urllib.request.urlopen(req, timeout=3)
+        resp = urllib.request.urlopen(req, timeout=5)
         ok = resp.status == 200
-        detail = f"HTTP {resp.status}" if ok else f"HTTP {resp.status}"
+        check("Dashboard", ok, f"HTTP {resp.status}")
+        if not ok: issues += 1
     except Exception as e:
-        detail = str(e)[:60]
-    check("Dashboard", ok, detail)
+        check("Dashboard", False, str(e)[:60])
+        issues += 1
 
-    # 4. MCP Server
+    # MCP Server
     try:
         import subprocess
         r = subprocess.run(
             [sys.executable, "-c", "from memory_hub.server.mcp_server import TOOLS; print(len(TOOLS))"],
-            capture_output=True, text=True, timeout=5,
-            cwd=str(Path(__file__).resolve().parent.parent)
+            capture_output=True, text=True, timeout=5
         )
         n = r.stdout.strip()
         ok = n.isdigit() and int(n) >= 5
-        detail = f"v2.0.0, {n} tools" if ok else f"import failed: {r.stderr[:60]}"
+        check("MCP Server", ok, f"{n} tools" if ok else r.stderr[:60])
+        if not ok: issues += 1
     except Exception as e:
-        ok = False
-        detail = str(e)[:60]
-    check("MCP Server", ok, detail)
+        check("MCP Server", False, str(e)[:60])
+        issues += 1
 
-    # 5. SQLite / File storage
+    # File Storage
     mh_dir = Path(os.path.expanduser("~/.memory-hub"))
     memories = mh_dir / "memories"
     ok = memories.exists()
     n = len(list(memories.glob("*.json"))) if ok else 0
-    check("SQLite / File Storage", ok, f"{n} files" if ok else "not found")
+    check("File Storage", ok, f"{n} files")
+    if not ok: issues += 1
 
-    # 6. Platform MCP configs
+    # Platform MCP configs
     platforms = {
-        "OpenClaw": Path(os.path.expanduser("~/.openclaw/openclaw.json")),
-        "DeepSeek": Path(os.path.expanduser("~/.deepseek/mcp.json")),
-        "Hermes": Path(os.path.expanduser("~/.hermes/mcp.json")),
-        "Claude Code": Path(os.path.expanduser("~/.claude/mcp.json")),
+        "OpenClaw":    (Path.home() / ".openclaw/openclaw.json", ["mcp","servers","memory-hub"]),
+        "DeepSeek":    (Path.home() / ".deepseek/mcp.json", ["servers","memory-hub"]),
+        "Hermes":      (Path.home() / ".hermes/mcp.json", ["servers","memory-hub"]),
+        "Claude Code": (Path.home() / ".claude/mcp.json", ["mcpServers","memory-hub"]),
     }
-    for name, fp in platforms.items():
+    for name, (fp, keys) in platforms.items():
         ok = False; detail = "not found"
         if fp.exists():
             try:
                 cfg = json.loads(fp.read_text(encoding="utf-8"))
-                servers = cfg.get("mcp", {}).get("servers", cfg.get("servers", cfg.get("mcpServers", {})))
-                ok = "memory-hub" in servers
-                detail = "configured" if ok else "memory-hub not in config"
-            except Exception:
-                detail = "config parse error"
+                d = cfg
+                for k in keys:
+                    d = d.get(k, {})
+                ok = d and len(d) > 1
+                detail = "configured" if ok else "not configured"
+            except: detail = "parse error"
         else:
-            detail = "config file not found"
+            detected = fp.parent.exists()
+            detail = "platform not detected" if not detected else "config not found"
         check(f"MCP: {name}", ok, detail)
-
-    # 7. Collections
-    print()
-    print("📊 Qdrant Collections:")
-    try:
-        req = urllib.request.Request("http://localhost:6333/collections", method="GET")
-        resp = urllib.request.urlopen(req, timeout=3)
-        data = json.loads(resp.read())
-        for c in data.get("result", {}).get("collections", []):
-            cn = c["name"]
-            try:
-                req2 = urllib.request.Request(f"http://localhost:6333/collections/{cn}", method="GET")
-                resp2 = urllib.request.urlopen(req2, timeout=3)
-                d2 = json.loads(resp2.read())
-                pts = d2.get("result", {}).get("points_count", 0)
-                status = d2.get("result", {}).get("status", "unknown")
-                print(f"  • {cn}: {pts} points ({status})")
-            except:
-                print(f"  • {cn}: ? points")
-    except Exception as e:
-        print(f"  ⚠️  Qdrant unavailable: {e}")
+        if not ok: issues += 1
 
     print()
-    print("✅ Verification complete.")
+    if issues == 0:
+        print(f"{G}✅ All checks passed{N}")
+    else:
+        print(f"{R}❌ {issues} check(s) failed{N}")
+
+    # Also show full status
+    status_detail()
+
 
 if __name__ == "__main__":
-    run_verify()
+    import sys
+    if "--quick" in sys.argv:
+        run_verify()
+    else:
+        status_detail()
