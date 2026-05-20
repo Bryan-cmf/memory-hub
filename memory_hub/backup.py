@@ -53,6 +53,16 @@ def backup_configs(tier_dir):
            MH/"backup_state.json"]:
   if f.exists(): shutil.copy2(f,tier_dir/f.name)
 
+def run_backup(tier="hourly"):
+    """Run backup for the given tier. Called by CLI."""
+    print(f"🛡️ Running {tier} backup...")
+    try:
+        create_backup(tier)
+        print(f"✅ {tier} backup complete → {BACKUP_ROOT}/{tier}/")
+    except Exception as e:
+        print(f"❌ {tier} backup failed: {e}")
+
+
 def create_backup(tier="hourly"):
  st=load_state()
  ts=datetime.now(HKT).strftime("%Y%m%d_%H%M")
