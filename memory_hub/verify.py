@@ -20,8 +20,8 @@ def status_detail():
     print(f"{'═'*60}")
     print(f"  Time: {datetime.now(HKT).strftime('%Y-%m-%d %H:%M:%S')} HKT\n")
 
-    # ── 1. All Databases ──
-    print(f"{B}🗄️  All Storage Backends{N}")
+    # ── 1. All 10 Databases ──
+    print(f"{B}🗄️  All Storage Backends (10){N}")
     print(f"  {'─'*56}")
     # Try fetching from daemon API first, fall back to local
     try:
@@ -91,6 +91,68 @@ def status_detail():
             total_l += rows
             print(f"  {G}✅{N} {tn:<20} {rows:>6} rows")
         print(f"  {B}LanceDB Total:{N} {total_l} rows")
+
+    # SQLite-vec
+    sv = stats.get("sqlite_vec", {})
+    if "error" in sv:
+        pass  # Not installed, skip
+    elif sv:
+        print(f"\n  {B}🗃️  SQLite-vec (Embedded Vector):{N}")
+        total_sv = 0
+        for tn, rows in sv.items():
+            total_sv += rows
+            print(f"  {G}✅{N} {tn:<20} {rows:>6} rows")
+        print(f"  {B}SQLite-vec Total:{N} {total_sv} rows")
+
+    # FAISS
+    fa = stats.get("faiss", {})
+    if fa and "mode" in fa:
+        print(f"\n  {B}🔬 FAISS (In-Memory Index):{N}")
+        print(f"  ℹ️  {fa['mode']}, {fa.get('indexes',0)} indexes")
+
+    # Redis
+    rd = stats.get("redis", {})
+    if "error" not in rd and rd:
+        print(f"\n  {B}⚡ Redis (Cache + Vector):{N}")
+        print(f"  {G}✅{N} {rd.get('keys',0)} keys stored")
+    elif "error" in rd:
+        print(f"\n  {B}⚡ Redis:{N} {Y}⚠️  {rd['error']}{N}")
+
+    # PostgreSQL + pgvector
+    pg = stats.get("pgvector", {})
+    if "error" not in pg and pg:
+        print(f"\n  {B}🐘 PostgreSQL + pgvector:{N}")
+        total_pg = 0
+        for tn, rows in pg.items():
+            total_pg += rows
+            print(f"  {G}✅{N} {tn:<20} {rows:>6} rows")
+        print(f"  {B}PG Total:{N} {total_pg} rows")
+    elif "error" in pg:
+        print(f"\n  {B}🐘 PostgreSQL:{N} {Y}⚠️  {pg['error']}{N}")
+
+    # Elasticsearch
+    es = stats.get("elasticsearch", {})
+    if "error" not in es and es:
+        print(f"\n  {B}🔍 Elasticsearch:{N}")
+        total_es = 0
+        for idx, cnt in es.items():
+            total_es += cnt
+            print(f"  {G}✅{N} {idx:<20} {cnt:>6} docs")
+        print(f"  {B}ES Total:{N} {total_es} docs")
+    elif "error" in es:
+        print(f"\n  {B}🔍 Elasticsearch:{N} {Y}⚠️  {es['error']}{N}")
+
+    # MongoDB
+    mg = stats.get("mongodb", {})
+    if "error" not in mg and mg:
+        print(f"\n  {B}🍃 MongoDB (Document + Vector):{N}")
+        total_mg = 0
+        for cn, cnt in mg.items():
+            total_mg += cnt
+            print(f"  {G}✅{N} {cn:<20} {cnt:>6} docs")
+        print(f"  {B}Mongo Total:{N} {total_mg} docs")
+    elif "error" in mg:
+        print(f"\n  {B}🍃 MongoDB:{N} {Y}⚠️  {mg['error']}{N}")
 
     # ── 2. Daemon ──
     print(f"\n{B}📡 Capture Daemon{N}")
