@@ -1,0 +1,116 @@
+{
+  "id": "memory-hub",
+  "name": "MemoryHub",
+  "version": "1.2.0",
+  "description": "持久記憶增強系統 — 向量語義記憶 + Session JSONL 掃描 + 跨 Session 記憶關聯。在現有 MEMORY-SYSTEM.md 基礎上新增第四層向量記憶層，根治記憶黑洞。",
+  "author": "Bryan Chan / UltraClaw",
+  "license": "MIT",
+  "homepage": "https://github.com/bryan-cmf/memory-hub",
+  "repository": "https://github.com/bryan-cmf/memory-hub",
+  "keywords": ["memory", "vector", "qdrant", "embedding", "semantic-search", "session-scan", "persistence"],
+  "contracts": {
+    "tui": {
+      "command": "memory-hub tui",
+      "description": "向量記憶系統終端監控界面",
+      "shortcuts": {
+        "1": "dashboard",
+        "2": "search",
+        "3": "save",
+        "4": "stats",
+        "5": "settings"
+      }
+    },
+    "tools": [
+      "mem_save",
+      "mem_search", 
+      "mem_list_collections",
+      "mem_delete",
+      "mem_stats"
+    ],
+    "skills": ["memory-hub"],
+    "commands": [
+      "/memory-search",
+      "/memory-save",
+      "/memory-stats"
+    ]
+  },
+  "activation": {
+    "onStartup": true,
+    "autoLoad": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "tier": {
+        "type": "string",
+        "enum": ["0", "1", "2", "3"],
+        "default": "0",
+        "description": "安裝層級：0=純Skill, 1=SQLite-vec輕量, 2=Qdrant全功能, 3=Cloud API"
+      },
+      "qdrantUrl": {
+        "type": "string",
+        "default": "http://localhost:6333",
+        "description": "Qdrant 服務地址（Tier 2）"
+      },
+      "embeddingModel": {
+        "type": "string",
+        "default": "all-MiniLM-L6-v2",
+        "description": "Embedding 模型名稱（Tier 1-2）"
+      },
+      "collections": {
+        "type": "array",
+        "items": {"type": "string"},
+        "default": ["openclaw_mem"],
+        "description": "要使用的記憶集合"
+      },
+      "similarityThreshold": {
+        "type": "number",
+        "default": 0.6,
+        "minimum": 0.3,
+        "maximum": 0.95,
+        "description": "相似度搜索閾值"
+      },
+      "maxResults": {
+        "type": "integer",
+        "default": 10,
+        "minimum": 1,
+        "maximum": 50,
+        "description": "搜索最大返回數"
+      },
+      "scanIntervalMinutes": {
+        "type": "integer",
+        "default": 5,
+        "minimum": 1,
+        "maximum": 60,
+        "description": "JSONL 掃描間隔（分鐘）"
+      },
+      "sessionDirs": {
+        "type": "array",
+        "items": {"type": "string"},
+        "default": [],
+        "description": "自定義 session JSONL 目錄（可覆蓋默認掃描路徑）"
+      },
+      "skipPatterns": {
+        "type": "array",
+        "items": {"type": "string"},
+        "default": ["emails", "dream-log", "notification", "heartbeat"],
+        "description": "跳過的記憶文件關鍵詞"
+      },
+      "cloudProvider": {
+        "type": "string",
+        "enum": ["openai", "deepseek"],
+        "default": "openai",
+        "description": "雲端 Embedding 提供商（Tier 3）"
+      },
+      "cloudApiKey": {
+        "type": "string",
+        "description": "雲端 API Key（Tier 3）"
+      }
+    }
+  },
+  "platforms": ["darwin", "linux", "win32"],
+  "minPythonVersion": "3.9",
+  "minNodeVersion": "18.0.0",
+  "tags": ["memory", "vector-search", "semantic", "persistence", "cross-session"]
+}

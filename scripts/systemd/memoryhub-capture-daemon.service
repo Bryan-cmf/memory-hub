@@ -1,0 +1,18 @@
+[Unit]
+Description=MemoryHub Capture Daemon
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=%u
+ExecStart=/usr/bin/python3 -m memory_hub.daemon
+Restart=always
+RestartSec=10
+Environment=QDRANT_URL=http://localhost:6333
+WorkingDirectory=%h/.memory-hub
+StandardOutput=append:%h/.memory-hub/capture_daemon.log
+StandardError=append:%h/.memory-hub/capture_daemon.log
+
+[Install]
+WantedBy=default.target

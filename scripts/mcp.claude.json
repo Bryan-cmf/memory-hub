@@ -1,0 +1,16 @@
+{
+  "platform": "claude",
+  "config_path": "~/.claude/mcp.json",
+  "mcp_server": {
+    "command": "python3",
+    "args": [
+      "/Users/Claw/Desktop/MemoryHub/server/mcp_server.py"
+    ],
+    "env": {
+      "EMBEDDING_MODEL": "BAAI/bge-m3",
+      "QDRANT_URL": "http://localhost:6333",
+      "MEMORY_COLLECTION": "claude_mem"
+    }
+  },
+  "instructions": "Add the 'memory-hub' entry to ~/.claude/mcp.json. Restart claude to load."
+}

@@ -1,0 +1,55 @@
+# AGENTS.md 修補 — 記憶系統整合
+
+將以下內容合併到 AGENTS.md 的適當章節：
+
+---
+
+## 🧠 Memory System Integration (MemoryHub)
+
+### Auto-Sync Architecture
+The MemoryHub system runs as a background daemon that:
+1. Scans session JSONL files every 5 minutes for new content
+2. Extracts meaningful user↔agent exchanges
+3. Generates structured summaries
+4. Embeds and stores in vector database
+5. Provides semantic search via MCP tools
+
+### Available MCP Tools
+- `mem_save` — Save a memory to vector store
+- `mem_search` — Semantic search across all memories
+- `mem_stats` — View memory statistics
+- `mem_list_collections` — List all memory collections
+- `mem_delete` — Remove a memory entry
+
+### When to Use Memory Tools
+| Situation | Action |
+|-----------|--------|
+| User asks "what did we do before..." | `mem_search` |
+| Completing important task | `mem_save` |
+| Found a bug/fix | `mem_save` with tags=["踩坑"] |
+| User corrected you | `mem_save` with tags=["修正"] |
+| Starting new project phase | `mem_search` for context |
+| End of work session | `mem_save` summary + update daily log |
+
+### Memory Files (always kept in sync)
+```
+workspace/
+├── MEMORY.md              # Long-term memory
+├── memory/
+│   ├── daily/             # Daily work logs
+│   ├── projects/          # Project-specific memory
+│   └── lessons/           # Mistakes and learnings
+└── .learnings/            # Self-improvement logs
+```
+
+### Daemon Health Check
+```bash
+# Check if MemoryHub scanner is running
+pgrep -f "session_scanner.py"
+
+# Check vector store
+curl -s http://localhost:6333/health
+
+# View recent scans
+cat ~/.memory-hub/scan_state.json
+```

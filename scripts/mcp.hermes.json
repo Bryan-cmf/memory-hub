@@ -1,0 +1,16 @@
+{
+  "platform": "hermes",
+  "config_path": "~/.hermes/mcp.json",
+  "mcp_server": {
+    "command": "python3",
+    "args": [
+      "/Users/Claw/Desktop/MemoryHub/server/mcp_server.py"
+    ],
+    "env": {
+      "EMBEDDING_MODEL": "BAAI/bge-m3",
+      "QDRANT_URL": "http://localhost:6333",
+      "MEMORY_COLLECTION": "hermes_mem"
+    }
+  },
+  "instructions": "Add the 'memory-hub' entry to ~/.hermes/mcp.json. Restart hermes to load."
+}

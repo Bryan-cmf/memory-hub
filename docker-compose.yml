@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  daemon:
+    build: .
+    command: python3 -m memory_hub.daemon
+    volumes:
+      - ~/.hermes/sessions:/sessions/hermes:ro
+      - ~/.openclaw/agents:/sessions/openclaw:ro
+      - ~/.deepseek/sessions:/sessions/deepseek:ro
+      - ~/.claude:/sessions/claude:ro
+      - memory_hub_state:/root/.memory-hub
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  memory_hub_state:

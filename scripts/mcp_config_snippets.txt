@@ -1,0 +1,70 @@
+# MemoryHub MCP Configuration Snippets for All 4 Platforms
+# Copy the appropriate section to each platform's MCP config file
+# Or run: memory-hub setup (auto-configures all detected platforms)
+
+# ── OpenClaw ──────────────────────────────────────
+# File: ~/.openclaw/openclaw.json → "mcp" → "servers"
+# Add this JSON object:
+
+"memory-hub": {
+  "command": "python3",
+  "args": ["-m", "memory_hub.server.mcp_server"],
+  "env": {
+    "EMBEDDING_MODEL": "BAAI/bge-m3",
+    "QDRANT_URL": "http://localhost:6333",
+    "MEMORY_COLLECTION": "openclaw_mem",
+    "DAEMON_HOOK_URL": "http://localhost:3872/hook",
+    "SIMILARITY_THRESHOLD": "0.6",
+    "MAX_RESULTS": "10"
+  }
+}
+
+# ── DeepSeek TUI ──────────────────────────────────
+# File: ~/.deepseek/mcp.json
+# Add this JSON object:
+
+"memory-hub": {
+  "command": "python3",
+  "args": ["-m", "memory_hub.server.mcp_server"],
+  "env": {
+    "EMBEDDING_MODEL": "BAAI/bge-m3",
+    "QDRANT_URL": "http://localhost:6333",
+    "MEMORY_COLLECTION": "deepseek_mem",
+    "DAEMON_HOOK_URL": "http://localhost:3872/hook",
+    "SIMILARITY_THRESHOLD": "0.6"
+  }
+}
+
+# ── Hermes Agent ──────────────────────────────────
+# File: ~/.hermes/mcp.json
+# Add this JSON object:
+
+"memory-hub": {
+  "command": "python3",
+  "args": ["-m", "memory_hub.server.mcp_server"],
+  "env": {
+    "EMBEDDING_MODEL": "BAAI/bge-m3",
+    "QDRANT_URL": "http://localhost:6333",
+    "MEMORY_COLLECTION": "hermes_mem",
+    "DAEMON_HOOK_URL": "http://localhost:3872/hook"
+  }
+}
+
+# ── Claude Code ───────────────────────────────────
+# File: ~/.claude/mcp.json
+# Add this JSON object:
+
+"memory-hub": {
+  "command": "python3",
+  "args": ["-m", "memory_hub.server.mcp_server"],
+  "env": {
+    "EMBEDDING_MODEL": "BAAI/bge-m3",
+    "QDRANT_URL": "http://localhost:6333",
+    "MEMORY_COLLECTION": "claude_mem",
+    "DAEMON_HOOK_URL": "http://localhost:3872/hook"
+  }
+}
+
+# After adding, restart the respective platform to load the new MCP server.
+# Tools exposed: mem_save, mem_search, mem_stats, mem_list_collections, mem_delete, capture_send
+# Real-time capture (Mode A) activates automatically when any tool is called.

@@ -1,0 +1,11 @@
+# MemoryHub Crontab Template
+# 將以下內容添加到 crontab -e
+
+# Session JSONL 掃描 — 每 5 分鐘
+*/5 * * * * cd ~/.memory-hub && python3 scanner/session_scanner.py >> /tmp/memory_hub_scan.log 2>&1
+
+# 健康檢查 — 每 1 分鐘
+* * * * * bash ~/.memory-hub/guard/health_check.sh
+
+# 每日記憶摘要 — 每天 23:00（手動檢查當日記憶）
+0 23 * * * cd ~/.memory-hub && python3 scanner/session_scanner.py >> /tmp/memory_hub_daily.log 2>&1

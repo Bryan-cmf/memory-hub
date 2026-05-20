@@ -1,0 +1,14 @@
+{
+  "name": "@bryan-cmf/memory-hub",
+  "version": "1.2.0",
+  "description": "Persistent memory enhancement system for AI coding agents",
+  "main": "index.js",
+  "bin": {
+    "memory-hub": "./cli.js"
+  },
+  "files": ["cli.js", "plugin/", "skill/", "README.md", "LICENSE"],
+  "keywords": ["memory", "vector", "qdrant", "embedding", "semantic-search", "agent", "ai"],
+  "author": "Bryan Chan",
+  "license": "MIT",
+  "repository": "https://github.com/bryan-cmf/memory-hub"
+}

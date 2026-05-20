@@ -1,0 +1,76 @@
+{
+  "version": "1.2.0",
+  "daemon_pid": 0,
+  "started_at": null,
+  "mode": "dual",
+  "stats": {
+    "total_captured": 0,
+    "mode_a_mcp_count": 0,
+    "mode_b_scan_count": 0,
+    "scan_cycles": 0,
+    "last_scan_time": null,
+    "last_capture_time": null,
+    "errors": 0,
+    "restarts": 0
+  },
+  "platforms": {
+    "openclaw": {
+      "name": "OpenClaw",
+      "icon": "🦞",
+      "collection": "openclaw_mem",
+      "captured": 0,
+      "files_tracked": 0,
+      "last_at": null,
+      "last_preview": ""
+    },
+    "hermes": {
+      "name": "Hermes Agent",
+      "icon": "🪽",
+      "collection": "hermes_mem",
+      "captured": 0,
+      "files_tracked": 0,
+      "last_at": null,
+      "last_preview": ""
+    },
+    "deepseek": {
+      "name": "DeepSeek TUI",
+      "icon": "🐋",
+      "collection": "deepseek_mem",
+      "captured": 0,
+      "files_tracked": 0,
+      "last_at": null,
+      "last_preview": ""
+    },
+    "claude": {
+      "name": "Claude Code",
+      "icon": "🦫",
+      "collection": "claude_mem",
+      "captured": 0,
+      "files_tracked": 0,
+      "last_at": null,
+      "last_preview": ""
+    }
+  },
+  "scan_dirs": [
+    "~/.openclaw/logs/",
+    "~/.hermes/sessions/",
+    "~/.deepseek/sessions/",
+    "~/.claude/sessions/",
+    "~/.claude/projects/"
+  ],
+  "watch_dirs": [],
+  "dedup_stats": {
+    "layer_a_uuid5_skipped": 0,
+    "layer_b_offset_skipped": 0,
+    "layer_c_similarity_skipped": 0
+  },
+  "health": {
+    "last_health_check": null,
+    "status": "unknown",
+    "qdrant": "unknown",
+    "scanner": "unknown",
+    "capture_daemon": "unknown"
+  },
+  "recent_captures": [],
+  "updated_at": null
+}

@@ -1,0 +1,24 @@
+[project]
+name = "memory-hub"
+version = "2.0.0"
+description = "Persistent memory enhancement for AI agents — vector search + auto-capture + decade lifecycle"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [{name = "Bryan Chan"}]
+keywords = ["memory", "vector", "qdrant", "embedding", "semantic-search", "agent", "capture", "backup"]
+
+[project.scripts]
+memory-hub = "memory_hub.cli:main"
+
+[project.optional-dependencies]
+tui = ["textual>=0.52.0"]
+lite = ["sentence-transformers", "sqlite-vec", "httpx"]
+full = ["sentence-transformers", "qdrant-client", "mcp", "httpx"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["memory_hub", "memory_hub.*"]

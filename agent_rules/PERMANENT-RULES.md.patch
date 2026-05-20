@@ -1,0 +1,38 @@
+# PERMANENT-RULES.md 修補 — 記憶強制規則注入
+#
+# 將以下內容追加到 AGENTS.md 的末尾：
+
+---
+
+## 🔴 PERMANENT MEMORY RULES (MemoryHub)
+
+These rules are non-negotiable and persist across all sessions and channels.
+
+### R1: Always Check Memory Before Starting
+Before beginning any non-trivial task, search for related past work:
+- Read `memory/daily/` for recent activity
+- Read `MEMORY.md` for key decisions
+- If MemoryHub MCP is available, call `mem_search(query="current task keywords")`
+
+### R2: Always Write After Completing
+After completing any meaningful task, immediately:
+1. Append to `memory/daily/YYYY-MM-DD.md`
+2. If a mistake was made, write to `memory/lessons/`
+3. If a key decision was made, update `MEMORY.md`
+4. If MemoryHub MCP is available, call `mem_save(content="summary", tags=["task_type"])`
+
+### R3: Cross-Session Continuity
+When starting a new session:
+1. Check `memory/daily/` for the last 3 days
+2. Check if any projects have pending items in `memory/projects/`
+3. Use `mem_search` to find semantically related past work
+
+### R4: Mistakes Are More Important Than Successes
+- Every error, correction, or lesson learned MUST be recorded
+- Use `memory/lessons/` format: time, situation, root cause, solution, lesson
+- Mistakes not recorded = mistakes that will be repeated
+
+### R5: Files > Brain
+- Never rely on "I remember doing this"
+- Always verify against written records
+- If it's not in a file, it doesn't exist

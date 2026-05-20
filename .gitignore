@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.DS_Store
+*.egg-info/
+dist/
+build/
+~/.memory-hub/captured/
+~/.memory-hub/capture_offsets.json
+~/.memory-hub/capture_daemon_state.json
