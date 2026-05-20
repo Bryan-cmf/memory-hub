@@ -148,6 +148,7 @@ def status_detail():
     # ── 6. MEMORY.md Index ──
     print(f"\n{B}📑 MEMORY.md Auto-Index{N}")
     print(f"  {'─'*56}")
+    mh_dir = Path(os.path.expanduser("~/.memory-hub"))
     index_path = mh_dir / "MEMORY.md"
     if index_path.exists():
         lines = index_path.read_text(encoding="utf-8").strip().split("\n")

@@ -80,9 +80,9 @@ def sync_to_qdrant(collection: str, content: str, metadata: dict) -> bool:
 def _chroma_available() -> bool:
     try:
         import subprocess
-        r = subprocess.run([sys.executable, "-c", "import chromadb; print(1)"],
+        r = subprocess.run([sys.executable, "-m", "pip", "show", "chromadb"],
                           capture_output=True, timeout=10)
-        return r.returncode == 0 and "1" in r.stdout
+        return r.returncode == 0
     except Exception:
         return False
 
@@ -110,9 +110,9 @@ def sync_to_chroma(collection: str, content: str, metadata: dict) -> bool:
 def _lancedb_available() -> bool:
     try:
         import subprocess
-        r = subprocess.run([sys.executable, "-c", "import lancedb; print(1)"],
+        r = subprocess.run([sys.executable, "-m", "pip", "show", "lancedb"],
                           capture_output=True, timeout=10)
-        return r.returncode == 0 and "1" in r.stdout
+        return r.returncode == 0
     except Exception:
         return False
 
