@@ -267,15 +267,22 @@ def _clean_content(text: str) -> str:
     text = re.sub(r'Conversation info \(untrusted metadata\):\s*' + NL + r'```json' + NL + r'\{.+?\}' + NL + r'```\s*' + NL + r'?', '', text, flags=re.DOTALL)
     # Remove Sender metadata block
     text = re.sub(r'Sender \(untrusted metadata\):\s*' + NL + r'```json' + NL + r'\{.+?\}' + NL + r'```\s*' + NL + r'?', '', text, flags=re.DOTALL)
-    # "Relevant long-term memory" is injected context — real message is AFTER it
+    # "Relevant long-term memory" — remove memory block, keep real message (before or after)
     if 'Relevant long-term memory from agentmemory:' in text:
-        _, after = text.split('Relevant long-term memory from agentmemory:', 1)
-        # Remove memory bullet/table lines, keep real message after the blank line
-        parts = after.split(NL + NL, 1)
-        if len(parts) > 1:
-            text = parts[1]  # Real message is after blank line
+        before, after = text.split('Relevant long-term memory from agentmemory:', 1)
+        # Real message is the non-empty part (can be before or after memory block)
+        before = before.strip()
+        # Try to extract real message from after (skip bullet/table lines until blank line)
+        after_clean = re.sub(r'^[-|#>] .*' + NL + r'?', '', after, flags=re.MULTILINE)
+        after_clean = re.sub(r'^\|[^' + NL + r']+\|.*' + NL + r'?', '', after_clean, flags=re.MULTILINE)
+        after_clean = after_clean.strip()
+        # Use whichever has content, prefer 'before'
+        if before:
+            text = before
+        elif after_clean:
+            text = after_clean
         else:
-            text = after  # No blank line, take everything after header
+            text = ''
     # Remove "System: ..." lines
     text = re.sub(r'^System: \[.+?\].*?' + NL + r'?', '', text, flags=re.MULTILINE)
     # Remove leftover markdown table/header lines
