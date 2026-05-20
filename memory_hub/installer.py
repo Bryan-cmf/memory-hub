@@ -254,24 +254,24 @@ OPTIONAL_BACKENDS = {
         "name": "Chroma",
         "desc": "Lightweight vector DB (pip, no Docker)",
         "install": lambda: subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--user", "--quiet", "chromadb"],
+            [sys.executable, "-m", "pip", "install", "--break-system-packages", "--quiet", "chromadb"],
             capture_output=True, timeout=120
         ),
         "verify": lambda: subprocess.run(
-            [sys.executable, "-c", "import chromadb"],
-            capture_output=True, timeout=15
+            [sys.executable, "-m", "pip", "show", "chromadb"],
+            capture_output=True, timeout=10
         ).returncode == 0,
     },
     "lancedb": {
         "name": "LanceDB",
         "desc": "Embedded vector DB (pip, lightest)",
         "install": lambda: subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--user", "--quiet", "lancedb"],
+            [sys.executable, "-m", "pip", "install", "--break-system-packages", "--quiet", "lancedb"],
             capture_output=True, timeout=120
         ),
         "verify": lambda: subprocess.run(
-            [sys.executable, "-c", "import lancedb"],
-            capture_output=True, timeout=15
+            [sys.executable, "-m", "pip", "show", "lancedb"],
+            capture_output=True, timeout=10
         ).returncode == 0,
     },
 }
