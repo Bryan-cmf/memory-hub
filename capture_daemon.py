@@ -126,13 +126,16 @@ def _scan_file(fp: Path, pid: str, last_offset: int = 0):
                         role = msg.get("role", "")
                         content = msg.get("content")
                     if role in ("user","assistant") and content:
+                        content = _clean_content(str(content))
+                        if not content: continue
                         # Extract channel + session metadata (P0-1, P0-2)
                         channel = _extract_channel(msg, pid, str(content))
                         session_id = msg.get("sessionId", msg.get("session_id", fp.stem))
                         mem_type = _classify_memory(role, str(content))
                         importance = _score_importance(pid, channel, role, str(content))
+                        ts = _parse_timestamp(msg.get("timestamp",""))
                         msgs.append({"platform":pid,"role":role,
-                            "content":str(content)[:300],"timestamp":msg.get("timestamp",""),
+                            "content":str(content)[:300],"timestamp":ts,
                             "mode":"B_scan","source_file":str(fp),
                             "channel":channel,"session_id":str(session_id)[:80],
                             "memory_type":mem_type,"importance":importance})
@@ -187,6 +190,8 @@ def _scan_deepseek_checkpoint(fp: Path, pid: str, last_count: int = 0) -> list:
                     else:
                         content = raw_content
                     if role in ("user","assistant") and content:
+                        content = _clean_content(str(content))
+                        if not content: continue
                         channel = "deepseek-tui"
                         mem_type = _classify_memory(role, str(content))
                         importance = _score_importance("deepseek", channel, role, str(content))
@@ -253,6 +258,28 @@ def _file_save(pid: str, msg: dict):
     day = datetime.now().strftime("%d")
     with open(d / f"{day}.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(msg, ensure_ascii=False) + "\n")
+
+def _clean_content(text: str) -> str:
+    """Strip Conversation info metadata from OpenClaw user messages."""
+    import re
+    text = re.sub(r'Conversation info \(untrusted metadata\):\s*\n```json\n\{[^`]+\}\n```\n?', '', text)
+    text = re.sub(r'Sender \(untrusted metadata\):\s*\n```json\n\{[^`]+\}\n```\n?', '', text)
+    text = re.sub(r'System: \[\d{4}-\d{2}-\d{2}.*?\]\s*\n?', '', text)
+    return text.strip()
+
+def _parse_timestamp(ts_str: str) -> str:
+    """Parse timestamp string and return HKT ISO format."""
+    if not ts_str:
+        return datetime.now(HKT).isoformat()
+    try:
+        ts_str = str(ts_str).replace('Z', '+00:00')
+        if '+' in ts_str or ts_str.endswith('00:00'):
+            dt = datetime.fromisoformat(ts_str)
+            dt_hkt = dt.astimezone(HKT)
+            return dt_hkt.isoformat()
+    except Exception:
+        pass
+    return str(ts_str)
 
 # ── P0-1: Channel extraction ──────────────────────
 
@@ -827,6 +854,8 @@ class DH(BaseHTTPRequestHandler):
                 body=json.loads(self.rfile.read(int(self.headers.get("Content-Length",0))))
                 pid=body.get("platform","unknown")
                 content=str(body.get("content",""))[:300]
+                content = _clean_content(content)
+                if not content: content = str(body.get("content",""))[:300]  # fallback
                 role=body.get("role","unknown")
                 channel = body.get("channel") or _extract_channel(body, pid, content)
                 mem_type = _classify_memory(role, content)
