@@ -79,10 +79,10 @@ def detect_environment():
     # AI Platforms
     platforms = {}
     for name, indicators in [
-        ("OpenClaw", [Path.home() / ".openclaw/openclaw.json"]),
-        ("Hermes", [Path.home() / ".hermes/mcp.json", Path.home() / ".hermes/sessions"]),
-        ("DeepSeek", [Path.home() / ".deepseek/mcp.json", Path.home() / ".deepseek/sessions"]),
-        ("Claude Code", [Path.home() / ".claude/mcp.json", Path.home() / ".claude/projects"]),
+        ("OpenClaw", [Path.home() / ".openclaw/openclaw.json", Path.home() / ".openclaw/agents"]),
+        ("Hermes", [Path.home() / ".hermes/sessions", Path.home() / ".hermes/mcp.json", Path.home() / ".hermes"]),
+        ("DeepSeek", [Path.home() / ".deepseek/sessions", Path.home() / ".deepseek/mcp.json", Path.home() / ".deepseek"]),
+        ("Claude Code", [Path.home() / ".claude/projects", Path.home() / ".claude.json", Path.home() / ".claude"]),
     ]:
         platforms[name] = any(p.exists() for p in indicators)
     results["platforms"] = platforms

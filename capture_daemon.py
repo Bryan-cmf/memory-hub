@@ -620,6 +620,7 @@ h1{font-size:1.4em;color:var(--blue)}.sub{color:var(--muted);font-size:.75em}
 <div class="tabs"><div class="tab active" onclick="switchChart('hourly',this)">24h Hourly</div><div class="tab" onclick="switchChart('daily',this)">7d Daily</div></div>
 <canvas class="chart" id="chart"></canvas>
 </div>
+<div class="panel"><h2>🗄️ Collections <span class="badge" id="collTotal">0</span></h2><div class="cards" id="collections">LOADING...</div></div>
 </div>
 <div class="panel" style="margin-bottom:12px"><h2>💬 Live Feed <span class="badge" id="feedCount">0</span></h2>
 <div class="flow" id="flow">LOADING...</div></div>
@@ -643,6 +644,15 @@ document.getElementById('sc').textContent=state.scan_cycle||0
 document.getElementById('qt').textContent=fmt(totalQ)
 document.getElementById('up').textContent=(historyData.uptime_hours||0).toFixed(1)+'h'
 document.getElementById('scanInfo').textContent='⏱ '+(state.last_scan||'').slice(11,19)
+// Collections panel
+let collCards='',collTotalPts=0
+Object.entries(collSizes).sort().forEach(([name,pts])=>{
+collTotalPts+=pts||0
+let label=name.replace('_mem','').replace('_',' ')
+collCards+=`<div class="pcard"><div class="ph"><span class="pn">${label}</span><span class="ps">${name}</span></div><div class="pv">${fmt(pts||0)}</div><div class="pp">vector points</div></div>`
+})
+document.getElementById('collections').innerHTML=collCards
+document.getElementById('collTotal').textContent=fmt(collTotalPts)
 // Live feed
 let msgs=(state.recent||[]).slice(-40).reverse()
 document.getElementById('feedCount').textContent=msgs.length

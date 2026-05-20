@@ -36,6 +36,7 @@ def run_verify():
 
     # 2. Daemon
     ok, detail = False, ""
+    ok, detail = False, ""
     try:
         req = urllib.request.Request("http://localhost:3872/api/state", method="GET")
         resp = urllib.request.urlopen(req, timeout=3)
