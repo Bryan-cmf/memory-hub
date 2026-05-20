@@ -262,26 +262,32 @@ def _file_save(pid: str, msg: dict):
 def _clean_content(text: str) -> str:
     """Strip metadata blocks, keep only the real user message."""
     import re
-    # Remove Conversation info block
-    text = re.sub(r'Conversation info \(untrusted metadata\):\s*\n```json\n\{.+?\}\n```\s*\n?', '', text, flags=re.DOTALL)
+    NL = '\n'
+    # Remove Conversation info block (multiline JSON)
+    text = re.sub(r'Conversation info \(untrusted metadata\):\s*' + NL + r'```json' + NL + r'\{.+?\}' + NL + r'```\s*' + NL + r'?', '', text, flags=re.DOTALL)
     # Remove Sender metadata block
-    text = re.sub(r'Sender \(untrusted metadata\):\s*\n```json\n\{.+?\}\n```\s*\n?', '', text, flags=re.DOTALL)
-    # "Relevant long-term memory" is injected context — keep only what's BEFORE it
+    text = re.sub(r'Sender \(untrusted metadata\):\s*' + NL + r'```json' + NL + r'\{.+?\}' + NL + r'```\s*' + NL + r'?', '', text, flags=re.DOTALL)
+    # "Relevant long-term memory" is injected context — real message is AFTER it
     if 'Relevant long-term memory from agentmemory:' in text:
-        before, _ = text.split('Relevant long-term memory from agentmemory:', 1)
-        text = before
+        _, after = text.split('Relevant long-term memory from agentmemory:', 1)
+        # Remove memory bullet/table lines, keep real message after the blank line
+        parts = after.split(NL + NL, 1)
+        if len(parts) > 1:
+            text = parts[1]  # Real message is after blank line
+        else:
+            text = after  # No blank line, take everything after header
     # Remove "System: ..." lines
-    text = re.sub(r'^System: \[.+?\].*?\n?', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^System: \[.+?\].*?' + NL + r'?', '', text, flags=re.MULTILINE)
     # Remove leftover markdown table/header lines
-    text = re.sub(r'^(?:\|.*\||[-|]{3,}.*|> .*|#+ .*)\n?', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^(?:\|.*\||[-|]{3,}.*|> .*|#+ .*)' + NL + r'?', '', text, flags=re.MULTILINE)
     # Remove [DS-SESSION-START] noise
-    text = re.sub(r'\[DS-SESSION-START\].*?\n?', '', text)
+    text = re.sub(r'\[DS-SESSION-START\].*?' + NL + r'?', '', text)
     # Remove blank lines at start
-    while text.startswith('\n'):
+    while text.startswith(NL):
         text = text[1:]
     # Collapse multiple blank lines
-    while '\n\n\n' in text:
-        text = text.replace('\n\n\n', '\n\n')
+    while NL + NL + NL in text:
+        text = text.replace(NL + NL + NL, NL + NL)
     return text.strip()
 
 def _parse_timestamp(ts_str: str) -> str:
