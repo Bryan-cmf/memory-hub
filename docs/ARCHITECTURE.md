@@ -1,119 +1,119 @@
-# MemoryHub v2.0 — Architecture
+# MemoryHub Architecture
 
-> Version: 2.0.0 | Date: 2026-05-20
+> C4 Model, v2.0 · Last updated: 2026-06-11
 
-## Design Philosophy
-
-**Text + Vector + Time > Text alone.**
-Files are Source of Truth, vector memory is the semantic index, time layers are the lifecycle skeleton.
-
-## System Architecture
+## System Context
 
 ```
-AI Platforms (OpenClaw / Hermes / DeepSeek / Claude Code)
-        │                          │
-        │ MODE B: File scan        │ MODE A: MCP real-time
-        │ (every 5 min)            │ (instant via /hook)
-        ▼                          ▼
-   Capture Daemon (:3872) ──── Qdrant Vector DB (:6333)
-        │                          │
-   Dashboard (:3872)          MCP Server (stdio)
-   • Live feed                • mem_save / mem_search
-   • 24h/7d charts            • mem_stats / capture_send
-   • Global search             • 4 per-platform collections
-   • Collection stats
+                        ┌─────────────┐
+                        │   👤 User    │
+                        └──────┬──────┘
+                               │
+        ┌──────────────────────┼──────────────────────┐
+        ▼                      ▼                      ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  OpenClaw    │    │  Hermes      │    │  DeepSeek    │
+│  Agent       │    │  Agent       │    │  Agent       │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │
+       │  MCP / Filesystem │                   │
+       ▼                   ▼                   ▼
+┌─────────────────────────────────────────────────────┐
+│                   MemoryHub                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
+│  │ Capture  │  │ Storage  │  │   Dashboard      │  │
+│  │ Engine   │──▶ Qdrant   │  │   :3872          │  │
+│  │          │──▶ Files    │  │                  │  │
+│  └──────────┘  └──────────┘  └──────────────────┘  │
+└─────────────────────────────────────────────────────┘
 ```
 
-## Core Components
+## Container Diagram
 
-### Capture Daemon (`memory_hub/daemon.py`)
+```
+┌─────────────────────────────────────────────────────┐
+│                   memory_hub/                        │
+│                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
+│  │ daemon   │  │ backends │  │  api_server      │  │
+│  │ Capture  │──▶ Qdrant   │  │  Dashboard HTML   │  │
+│  │ MODE A+B │  │ Chroma   │  │  REST /hook       │  │
+│  │ Scanner  │  │ (10 BE)  │  │  /api/state       │  │
+│  └────┬─────┘  └──────────┘  │  /api/search       │  │
+│       │                      └──────────────────┘  │
+│       ▼                                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
+│  │ sync     │  │ server/  │  │  cli              │  │
+│  │ engine   │  │ mcp      │  │  CLI interface    │  │
+│  │          │  │ stdio    │  │                  │  │
+│  └──────────┘  └──────────┘  └──────────────────┘  │
+└─────────────────────────────────────────────────────┘
+```
 
-Single unified daemon handling:
-- **Mode A (MCP real-time)**: Accepts capture via POST `/hook`, triggered when any platform calls MCP tools
-- **Mode B (filesystem scan)**: Scans 4 platform session directories every 5 minutes, incremental via file offsets
-- **Dashboard**: Built-in HTTP server on port 3872 with 6 API endpoints
-- **State management**: In-memory state + persistent offset tracking for incremental scanning
+## Component Diagram: Capture Engine
 
-### MCP Server (`memory_hub/server/mcp_server.py`)
-
-JSON-RPC stdio server with 6 tools:
-- `mem_save` — Save memory to Qdrant + notify daemon
-- `mem_search` — Semantic similarity search
-- `mem_stats` — Collection statistics
-- `mem_list_collections` — List all collections
-- `mem_delete` — Delete a memory entry
-- `capture_send` — Explicit conversation capture
-
-### CLI (`memory_hub/cli.py`)
-
-```bash
-memory-hub setup    # Interactive installer
-memory-hub start    # Start daemon
-memory-hub status   # System health
-memory-hub stop     # Stop daemon
-memory-hub verify   # Health verification
-memory-hub backup   # Run backup
+```
+     MODE A (MCP Real-time)        MODE B (Filesystem Scan)
+     ┌──────────────┐              ┌──────────────┐
+     │ mcp_intercept│              │ _discover()  │
+     │ (hook)       │              │ _scan_file() │
+     └──────┬───────┘              └──────┬───────┘
+            │                             │
+            ▼                             ▼
+     ┌─────────────────────────────────────────┐
+     │            _process()                    │
+     │    De-duplicate → Classify → Score      │
+     └──────────────┬──────────────────────────┘
+                    │
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+   ┌─────────┐ ┌─────────┐ ┌─────────┐
+   │ Qdrant  │ │ File    │ │ STATE   │
+   │ Vector  │ │ JSONL   │ │ (live)  │
+   └─────────┘ └─────────┘ └─────────┘
 ```
 
 ## Data Flow
 
 ```
-1. User chats with AI agent
-2. Agent's session file updated (JSONL/JSON)
-3. Daemon Mode B scanner picks up new lines (≤5 min delay)
-   OR Agent calls MCP tool → Mode A instant capture
-4. Content parsed, role extracted (user/assistant)
-5. Capture saved to ~/.memory-hub/captured/<platform>/YYYY/MM/DD.jsonl
-6. Vector embedding generated via BGE-m3 (local inference)
-7. Stored in Qdrant collection for semantic search
-8. Dashboard updated in real-time
+Session JSONL (4 platforms)
+    │
+    ▼
+capture_daemon (Mode B scan, every 60s)
+    │
+    ├──→ Qdrant (vector index, BGE-m3 1024-dim)
+    ├──→ ~/.memory-hub/captured/{platform}/ (source files)
+    └──→ STATE (in-memory, dashboard reads)
+    
+MCP tools (mem_search, mem_save)
+    │
+    ▼
+capture_daemon (Mode A intercept)
+    │
+    └──→ _process() → Qdrant + Files + STATE
 ```
 
-## Platform Parsers
+## Design Decisions (ADR)
 
-| Platform | Parser | Format | Notes |
-|----------|--------|--------|-------|
-| OpenClaw | `_scan_file` | JSONL | type="message" with content blocks |
-| Hermes | `_scan_file` | JSONL | role/content per line |
-| DeepSeek | `_scan_deepseek_checkpoint` | JSON | messages array with content blocks |
-| Claude Code | `_scan_file` | JSONL | event log format; MCP for best results |
+### ADR-1: Why Qdrant as Primary Vector DB?
+**Decision:** Qdrant as default, others optional.
+**Rationale:** Highest performance for semantic search, native Docker support, REST API.
+**Trade-off:** Requires Docker runtime. Users without Docker use file-only mode.
 
-## Storage Layout
+### ADR-2: Why dual capture (MCP + Filesystem)?
+**Decision:** Both Mode A (real-time MCP intercept) and Mode B (filesystem scan).
+**Rationale:** Mode A is fast but platform-specific. Mode B is universal but delayed. Together they cover all platforms.
 
-```
-~/.memory-hub/
-├── capture_daemon_state.json   # Live daemon state
-├── capture_offsets.json         # Per-file byte/message offsets
-├── captured/                    # All captures (Source of Truth)
-│   ├── openclaw/YYYY/MM/DD.jsonl
-│   ├── hermes/YYYY/MM/DD.jsonl
-│   ├── deepseek/YYYY/MM/DD.jsonl
-│   └── claude/YYYY/MM/DD.jsonl
-├── memories/                    # MCP-saved memories
-│   └── <uuid>.json
-└── hooks/                       # Hook log
-```
+### ADR-3: Why in-memory STATE + file persistence?
+**Decision:** STATE in memory for dashboard performance, backed by JSON files for restart survival.
+**Rationale:** Dashboard needs sub-millisecond reads. Qdrant is the source of truth; STATE is a cache.
+**Trade-off:** STATE loss on crash is acceptable (rebuilds from Qdrant on restart).
 
-## Deduplication (3-layer)
+## Current Limitations
 
-1. **Layer A**: UUID5 content-based dedup
-2. **Layer B**: Offset-based incremental scan (only scan new content)
-3. **Layer C**: Cross-session similarity dedup (>85%)
-
-## Lifecycle
-
-```
-Daily raw logs → Weekly digest → Monthly summary → Yearly review → Decade archive
-       ↓              ↓               ↓               ↓               ↓
-   Never deleted   Key events     Milestones      Year review     Long-term trends
-```
-
-## Tech Stack
-
-- **Language**: Python 3.9+
-- **Vector DB**: Qdrant (Docker, primary)
-- **Embedding**: BGE-m3 (local, via sentence-transformers)
-- **Full-text**: SQLite (built-in)
-- **API**: HTTP (stdlib http.server)
-- **MCP**: JSON-RPC stdio
-- **Auto-start**: launchd (macOS) / systemd (Linux)
+| Area | Issue | Planned Fix |
+|------|-------|-------------|
+| daemon.py | 1280 lines, 5 responsibilities | Extract api_server, state_manager |
+| Reliability | No circuit breaker on Qdrant calls | Add tenacity retry + timeout |
+| Scalability | Single-node only | Add Qdrant cluster support |
+| Platform config | Hard-coded dict | External YAML/JSON config |
