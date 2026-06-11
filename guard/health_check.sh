@@ -6,8 +6,8 @@ LOG="/tmp/memory_hub_health.log"
 MAX_LOG_LINES=500
 STATUS="OK"
 
-# ── 檢查 Qdrant ──
-if ! curl -sf http://localhost:6333/health > /dev/null 2>&1; then
+# ── 檢查 Qdrant (使用 /collections 端點，所有版本都支持) ──
+if ! curl -sf http://localhost:6333/collections > /dev/null 2>&1; then
     STATUS="QDRANT_DOWN"
 fi
 

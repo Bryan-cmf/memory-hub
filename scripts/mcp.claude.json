@@ -4,7 +4,7 @@
   "mcp_server": {
     "command": "python3",
     "args": [
-      "/Users/Claw/Desktop/MemoryHub/server/mcp_server.py"
+      "/Users/Claw/Desktop/MemoryHub/memory_hub/server/mcp_server.py"
     ],
     "env": {
       "EMBEDDING_MODEL": "BAAI/bge-m3",

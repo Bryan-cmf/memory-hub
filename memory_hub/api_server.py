@@ -72,6 +72,16 @@ button{background:var(--accent);border:none;border-radius:6px;padding:8px 16px;c
 <div class="panel"><h2>🗃️ 5 Backends <span class="badge" id="beTotal">0</span></h2><div class="cards" id="backends">LOADING...</div></div>
 <div class="panel" style="margin-bottom:12px"><h2>💬 Live Feed <span class="badge" id="feedCount">0</span></h2>
 <div class="flow" id="flow">LOADING...</div></div>
+<div class="panel" style="margin-bottom:12px"><h2>📔 回憶錄與洞察 <span class="badge" id="memoirCount">-</span></h2>
+<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+<button onclick="generateMemoir('week')" id="btnWeek" style="background:var(--green);border:none;border-radius:6px;padding:8px 14px;color:#fff;font-size:.82em;cursor:pointer">📔 生成週度回憶錄</button>
+<button onclick="generateMemoir('month')" id="btnMonth" style="background:var(--purple);border:none;border-radius:6px;padding:8px 14px;color:#fff;font-size:.82em;cursor:pointer">📕 生成月度回憶錄</button>
+<button onclick="generateInsight()" id="btnInsight" style="background:var(--orange);border:none;border-radius:6px;padding:8px 14px;color:#fff;font-size:.82em;cursor:pointer">💡 一鍵洞察</button>
+</div>
+<div id="memoirStatus" style="margin-bottom:8px;font-size:.8em;color:var(--muted)"></div>
+<div id="memoirList" style="max-height:200px;overflow-y:auto">LOADING...</div>
+<div id="memoirView" style="display:none;margin-top:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;max-height:50vh;overflow-y:auto;font-size:.85em;line-height:1.6;white-space:pre-wrap"></div>
+</div>
 <div class="panel"><h2 id="searchTitle" style="display:none">🔍 Search Results</h2><div id="searchResults"></div></div>
 </div>
 <script>
@@ -133,6 +143,13 @@ async function doSearch(){let q=document.getElementById('sq').value;document.get
 let res=await(await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=20')).json()
 let div=document.getElementById('searchResults')
 div.innerHTML=res.total?res.results.map(r=>`<div class="msg"><span class="mp">${esc(r.platform||'')}</span><span class="mc">${esc((r.content||'').substring(0,200))}</span></div>`).join(''):'<div class="empty">No matches found</div>'}
+// ── 回憶錄 ──
+async function lm(){try{let m=await(await fetch('/api/memoirs')).json();let wk=m.weekly||[],mo=m.monthly||[],all=[...wk,...mo].sort((a,b)=>b.modified.localeCompare(a.modified));document.getElementById('memoirCount').textContent=all.length;let h='';if(all.length===0)h='<div class="empty">尚無回憶錄。點擊上方按鈕生成第一份 ✨</div>';else{all.slice(0,10).forEach(m=>{let icon=m.category==='weekly'?'📔':'📕';let label=m.category==='weekly'?'週度':'月度';let dt=m.modified?new Date(m.modified).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';h+=`<div class="msg" style="cursor:pointer" onclick="viewMemoir('${esc(m.path)}')"><span style="font-size:1em">${icon}</span><span class="mr" style="color:var(--blue);min-width:40px">${label}</span><span class="mc">${esc(m.filename)}</span><span class="mt">${dt}</span></div>`})}
+document.getElementById('memoirList').innerHTML=h}catch(e){document.getElementById('memoirList').innerHTML='<div class="empty">無法載入</div>'}}
+async function generateMemoir(mode){let btn=document.getElementById(mode==='week'?'btnWeek':'btnMonth');btn.disabled=true;btn.textContent='⏳ 生成中...';document.getElementById('memoirStatus').innerHTML='<span style="color:var(--orange)">⏳ 正在準備生成任務，將在下一次 Heartbeat 完成...</span>';try{let r=await(await fetch('/api/memoir/generate?mode='+mode)).json();if(r.status==='ok'){document.getElementById('memoirStatus').innerHTML='<span style="color:var(--green)">✅ 任務已建立！回憶錄將在 30 分鐘內自動生成。</span>';setTimeout(lm,5000)}else{document.getElementById('memoirStatus').innerHTML='<span style="color:var(--red)">❌ 失敗：'+esc((r.error||r.message||''))+'</span>'}}catch(e){document.getElementById('memoirStatus').innerHTML='<span style="color:var(--red)">❌ 請求失敗</span>'}btn.disabled=false;btn.textContent=mode==='week'?'📔 生成週度回憶錄':'📕 生成月度回憶錄'}
+async function generateInsight(){let btn=document.getElementById('btnInsight');btn.disabled=true;btn.textContent='⏳ 分析中...';document.getElementById('memoirStatus').innerHTML='<span style="color:var(--orange)">💡 正在掃描最近的對話數據...</span>';let ins=document.getElementById('memoirView');ins.style.display='block';ins.textContent='⏳ 正在生成洞察...';try{let s=await(await fetch('/api/state')).json();let recent=s.recent||[];if(recent.length===0){ins.textContent='尚無足夠數據生成洞察。';btn.disabled=false;btn.textContent='💡 一鍵洞察';return};let topics={};recent.slice(0,200).forEach(m=>{let mt=m.memory_type||'other';topics[mt]=(topics[mt]||0)+1});let platforms={};recent.slice(0,200).forEach(m=>{let p=m.platform||'unknown';platforms[p]=(platforms[p]||0)+1});let h='<h3>💡 即時洞察</h3>';h+='<p>基於最近 '+recent.length+' 條記憶記錄的快速分析：</p>';h+='<h4>📊 話題分佈</h4><ul>';Object.entries(topics).sort((a,b)=>b[1]-a[1]).slice(0,8).forEach(([k,v])=>{h+='<li><b>'+esc(k)+'</b>: '+v+' 條 ('+Math.round(v/recent.length*100)+'%)</li>'});h+='</ul><h4>🤖 平台活躍度</h4><ul>';Object.entries(platforms).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{h+='<li><b>'+esc(k)+'</b>: '+v+' 條</li>'});h+='</ul><h4>📈 趨勢</h4><p>最近一小時新增 '+(s.recent||[]).filter(m=>{let t=new Date(m.time||m.timestamp||0);return (Date.now()-t)/3600000<1}).length+' 條記錄。</p>';h+='<blockquote>💡 完整洞察報告（含 LLM 深度分析）將在下一個回憶錄生成週期自動產出。</blockquote>';ins.innerHTML=h}catch(e){ins.textContent='生成洞察時出錯：'+e.message};btn.disabled=false;btn.textContent='💡 一鍵洞察'}
+async function viewMemoir(path){let v=document.getElementById('memoirView');v.style.display='block';v.textContent='⏳ 載入中...';try{let r=await(await fetch('/api/memoir/view?file='+encodeURIComponent(path))).text();let h=r.split(String.fromCharCode(10)).join('<br>');h=h.replace(/^# (.+)$/gm,'<h2 style="color:var(--blue);margin-top:12px">$1</h2>');h=h.replace(/^## (.+)$/gm,'<h3 style="color:var(--green);margin-top:8px">$1</h3>');h=h.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');v.innerHTML=h}catch(e){v.textContent='載入失敗：'+e.message}}
+lm()
 r()
 </script></body></html>"""
 
@@ -256,6 +273,25 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.send_response(200);self.send_header("Content-Type","application/json")
             self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
             self.wfile.write(json.dumps(stats,ensure_ascii=False).encode())
+        # ── 回憶錄 API ──
+        elif p=="/api/memoirs":
+            memoirs = _list_memoirs()
+            self.send_response(200);self.send_header("Content-Type","application/json")
+            self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
+            self.wfile.write(json.dumps(memoirs,ensure_ascii=False).encode())
+        elif p.startswith("/api/memoir/view"):
+            qs = parse_qs(urlparse(self.path).query)
+            file_path = unquote(qs.get("file",[""])[0])
+            content = _view_memoir(file_path)
+            self.send_response(200);self.send_header("Content-Type","text/plain; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
+            self.wfile.write(content.encode("utf-8"))
+        elif p=="/api/memoir/generate":
+            mode = parse_qs(urlparse(self.path).query).get("mode",["week"])[0]
+            result = _trigger_memoir_generation(mode)
+            self.send_response(200);self.send_header("Content-Type","application/json")
+            self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
+            self.wfile.write(json.dumps(result,ensure_ascii=False).encode())
         else:
             self.send_response(404);self.end_headers()
 
@@ -305,6 +341,25 @@ class DashboardHandler(BaseHTTPRequestHandler):
             STATE["recent"] = []
             self.send_response(200);self.send_header("Content-Type","application/json");self.end_headers()
             self.wfile.write(json.dumps({"status":"cleared","count":0}).encode())
+        # ── 回憶錄 API ──
+        elif p=="/api/memoirs":
+            memoirs = _list_memoirs()
+            self.send_response(200);self.send_header("Content-Type","application/json")
+            self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
+            self.wfile.write(json.dumps(memoirs,ensure_ascii=False).encode())
+        elif p.startswith("/api/memoir/view"):
+            qs = parse_qs(urlparse(self.path).query)
+            file_path = unquote(qs.get("file",[""])[0])
+            content = _view_memoir(file_path)
+            self.send_response(200);self.send_header("Content-Type","text/plain; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
+            self.wfile.write(content.encode("utf-8"))
+        elif p=="/api/memoir/generate":
+            mode = parse_qs(urlparse(self.path).query).get("mode",["week"])[0]
+            result = _trigger_memoir_generation(mode)
+            self.send_response(200);self.send_header("Content-Type","application/json")
+            self.send_header("Access-Control-Allow-Origin","*");self.end_headers()
+            self.wfile.write(json.dumps(result,ensure_ascii=False).encode())
         else:
             self.send_response(404);self.end_headers()
 
@@ -401,6 +456,49 @@ def run_daemon(HUB_PORT=3872):
         STATE_FILE.write_text(json.dumps(STATE,ensure_ascii=False,default=str,indent=2),encoding="utf-8")
         srv.shutdown()
         run_scan_cycle()
+
+# ── 回憶錄輔助函數 ─────────────────────────────
+
+def _list_memoirs():
+    """列出所有已生成的回憶錄"""
+    MEMOIR_DIR = Path(os.path.expanduser("~/.memory-hub/memoirs"))
+    result = {"weekly": [], "monthly": [], "quarterly": [], "yearly": []}
+    for category in ["weekly", "monthly"]:
+        cat_dir = MEMOIR_DIR / category
+        if cat_dir.exists():
+            for f in sorted(cat_dir.glob("*.md"), reverse=True):
+                if "_prompt" in f.name:
+                    continue
+                result[category].append({
+                    "filename": f.name,
+                    "category": category,
+                    "path": str(f),
+                    "size": f.stat().st_size,
+                    "modified": datetime.fromtimestamp(f.stat().st_mtime, HKT).isoformat(),
+                })
+    return result
+
+def _view_memoir(file_path: str):
+    """讀取指定回憶錄內容"""
+    p = Path(file_path)
+    if not p.exists():
+        return f"# 找不到檔案\n\n{file_path}"
+    return p.read_text(encoding="utf-8")
+
+def _trigger_memoir_generation(mode: str):
+    """觸發回憶錄生成（創建任務文件）"""
+    import subprocess
+    script = Path(__file__).parent.parent / "scripts" / "memoir_cron.py"
+    if not script.exists():
+        return {"status": "error", "message": f"找不到腳本: {script}"}
+    try:
+        r = subprocess.run(
+            [sys.executable, str(script), mode],
+            capture_output=True, text=True, timeout=60, cwd=str(script.parent.parent)
+        )
+        return {"status": "ok" if r.returncode == 0 else "error", "output": r.stdout, "error": r.stderr}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 if __name__=="__main__":
     import argparse

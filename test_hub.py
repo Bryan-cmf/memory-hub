@@ -84,7 +84,7 @@ if __name__ == "__main__":
     try:
         urllib.request.urlopen(f"{HUB_URL}/health", timeout=2)
         print("📡 Hub server is online\n")
-    except:
+    except Exception:
         print("⚠️ Hub server not running. Start with: python3 hub_server.py\n")
         print("Skipping live tests. Syntax check only.")
         import ast; from pathlib import Path

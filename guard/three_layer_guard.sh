@@ -8,8 +8,8 @@ MAX_LOG_LINES=500
 STATUS="OK"
 ISSUES=""
 
-# ── Layer 1: Qdrant Health ──
-if ! curl -sf --max-time 3 http://localhost:6333/health > /dev/null 2>&1; then
+# ── Layer 1: Qdrant Health (使用 /collections 端點) ──
+if ! curl -sf --max-time 3 http://localhost:6333/collections > /dev/null 2>&1; then
     STATUS="QDRANT_DOWN"
     ISSUES="$ISSUES qdrant"
 fi

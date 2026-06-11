@@ -10,10 +10,12 @@ MEMORY_ROOT = Path(os.path.expanduser("~/.openclaw/workspace/memory"))
 
 
 def _check_qdrant() -> dict:
-    """检查 Qdrant 服务状态。"""
+    """检查 Qdrant 服务状态（使用 /collections 端点，所有版本都支持）。"""
     try:
         import urllib.request
-        req = urllib.request.Request("http://localhost:6333/health")
+        # 修复 P1-1: /health 端点在某些 Qdrant 版本返回 404
+        # 改用 /collections（最可靠，所有版本都支持）
+        req = urllib.request.Request("http://localhost:6333/collections")
         urllib.request.urlopen(req, timeout=3)
         return {"status": "online", "url": "http://localhost:6333"}
     except Exception as e:

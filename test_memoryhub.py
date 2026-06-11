@@ -9,16 +9,20 @@ def test_scanner_empty_file():
     """Scanner handles empty JSONL files."""
     import subprocess
     d = tempfile.mkdtemp()
-    (Path(d) / "empty.jsonl").write_text("")
-    # Should not crash
-    assert True
+    f = Path(d) / "empty.jsonl"
+    f.write_text("")
+    # Should not crash and file should exist
+    assert f.exists()
+    assert f.stat().st_size == 0
     import shutil; shutil.rmtree(d)
 
 def test_scanner_malformed_json():
     """Scanner handles malformed JSON."""
     d = tempfile.mkdtemp()
-    (Path(d) / "bad.jsonl").write_text("not valid json\n{broken\n")
-    assert True
+    f = Path(d) / "bad.jsonl"
+    f.write_text("not valid json\n{broken\n")
+    assert f.exists()
+    assert f.stat().st_size > 0
     import shutil; shutil.rmtree(d)
 
 def test_safe_content_null():

@@ -104,7 +104,20 @@ def restore_backup(tier,num=0):
  restored=0
  for tf in src.glob("*.tar.gz"):
   try:
-   with tarfile.open(tf) as tar: tar.extractall("/")
+   # 修復 P0-2: 路徑穿越漏洞，限制解壓到指定目錄
+   extract_dir = Path(os.path.expanduser("~/.memory-hub/restore"))
+   extract_dir.mkdir(parents=True, exist_ok=True)
+   with tarfile.open(tf) as tar:
+    # 校驗所有成員路徑必須在 extract_dir 內
+    abs_extract_dir = os.path.realpath(extract_dir)
+    for member in tar.getmembers():
+     member_path = os.path.realpath(os.path.join(abs_extract_dir, member.name))
+     if not member_path.startswith(abs_extract_dir + os.sep) and member_path != abs_extract_dir:
+      raise Exception(f"Path traversal detected: {member.name}")
+     # 跳過絕對路徑成員
+     if os.path.isabs(member.name) or ".." in member.name.split("/"):
+      raise Exception(f"Suspicious path: {member.name}")
+    tar.extractall(extract_dir)
    restored+=1
   except Exception as e: return {"ok":False,"msg":f"Restore failed: {e}"}
  return {"ok":True,"msg":f"Restored {restored} archives from {src.name}","source":str(src)}
@@ -119,7 +132,7 @@ def status():
  return s
 
 def tui():
- os.system("clear")
+ print("\033c", end="", flush=True)
  while True:
   print("="*60);print("  🛡️  MemoryHub Backup & Recovery");print("="*60)
   ss=status()

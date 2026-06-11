@@ -26,7 +26,7 @@ def cmd_status(args):
 def cmd_stop(args):
     """Stop the capture daemon."""
     import subprocess
-    r = subprocess.run(["pgrep", "-f", "capture_daemon.py"], capture_output=True, text=True)
+    r = subprocess.run(["pgrep", "-f", "memory_hub.daemon"], capture_output=True, text=True)
     if r.stdout.strip():
         for pid in r.stdout.strip().split("\n"):
             try:

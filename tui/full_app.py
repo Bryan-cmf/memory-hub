@@ -27,7 +27,7 @@ def panel_dashboard():
         req = urllib.request.Request("http://localhost:6333/")
         urllib.request.urlopen(req, timeout=2)
         qdrant = "🟢 Online"
-    except:
+    except Exception:
         qdrant = "🔴 Offline"
     
     state_file = MH_DIR / "scan_state.json"
@@ -61,7 +61,7 @@ def panel_search():
                 s = max(0, idx-60)
                 e = min(len(content), idx+len(query)+100)
                 results.append({"file": str(f.relative_to(MEMORY_ROOT)), "snippet": content[s:e].replace("\n"," ")[:150]})
-        except: continue
+        except Exception: continue
     
     print(f"\n  Found {len(results)} results:")
     for i, r in enumerate(results[:10], 1):
@@ -99,7 +99,7 @@ def panel_stats():
             elif "_monthly" in f.name: stats["monthly"] += 1
             elif "_weekly" in f.name: stats["weekly"] += 1
             elif not f.name.startswith("_"): stats["daily"] += 1
-        except: continue
+        except Exception: continue
     
     print(f"\n  📊 Memory Statistics")
     print(f"  Daily logs:   {stats['daily']}")
@@ -143,7 +143,7 @@ def panel_timeline():
                 "title": first_line[:60],
                 "size": f.stat().st_size
             })
-        except: continue
+        except Exception: continue
     
     events.sort(key=lambda e: e["date"], reverse=True)
     
@@ -175,7 +175,7 @@ def panel_graph():
             # Files
             for m in re.findall(r'([\w\-]+\.(?:pdf|md|py|json))', content):
                 entities["files"].add(m)
-        except: continue
+        except Exception: continue
     
     for label, items in entities.items():
         if items:

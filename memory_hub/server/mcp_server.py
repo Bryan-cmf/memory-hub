@@ -6,11 +6,13 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 HKT = timezone(timedelta(hours=8))
+from memory_hub.backends import multi_save as _multi_save
+from memory_hub.embed import embed as _embed_fn
 QDRANT_URL=os.getenv("QDRANT_URL","http://localhost:6333")
 MODEL_NAME=os.getenv("EMBEDDING_MODEL","BAAI/bge-m3")
 DEFAULT_COL=os.getenv("MEMORY_COLLECTION","openclaw_mem")
 DAEMON_HOOK=os.getenv("DAEMON_HOOK_URL","http://localhost:3872/hook")
-_em=None;_qc=None
+_qc=None
 
 def _notify_daemon(platform: str, content: str, role: str = "mcp_intercept"):
     """Notify capture daemon via /hook endpoint (Mode A)."""
@@ -21,15 +23,6 @@ def _notify_daemon(platform: str, content: str, role: str = "mcp_intercept"):
         urllib.request.urlopen(req, timeout=2)
     except Exception:
         pass  # Daemon may not be running; non-critical
-
-def _get_em():
-    global _em
-    if _em:return _em
-    from sentence_transformers import SentenceTransformer
-    d="mps" if sys.platform=="darwin" else "cpu"
-    print(f"[MH] Loading {MODEL_NAME} on {d}",file=sys.stderr)
-    _em=SentenceTransformer(MODEL_NAME,device=d)
-    return _em
 
 def _get_qc():
     global _qc
@@ -44,16 +37,21 @@ def _get_qc():
         _qc=None
     return _qc
 
-def _vec(t):return _get_em().encode(t[:8000],normalize_embeddings=True).tolist()
+def _vec(t):return _embed_fn(t)
 
 def _ens_col(cn):
     qc=_get_qc()
     if not qc:return False
     try:
+        from memory_hub.embed import get_embedding_dim
+        dim = get_embedding_dim()
+    except Exception:
+        dim = 1024
+    try:
         from qdrant_client.models import Distance,VectorParams
         ex={x.name for x in qc.get_collections().collections}
         if cn not in ex:
-            qc.create_collection(cn,vectors_config=VectorParams(size=384,distance=Distance.COSINE,on_disk=True))
+            qc.create_collection(cn,vectors_config=VectorParams(size=dim,distance=Distance.COSINE,on_disk=True))
         return True
     except Exception:return False
 
@@ -77,20 +75,15 @@ def _fsearch(q,tags,lim):
     return r
 
 def mem_save(a):
+    """Multi-backend save via backends.py. Embed once, write to all enabled backends."""
     col=a.get("collection",DEFAULT_COL);cont=a["content"];tags=a.get("tags",[]);meta=a.get("metadata",{})
-    pid=str(uuid.uuid5(uuid.NAMESPACE_DNS,cont))
-    payload={"content":cont,"tags":tags,"created_at":datetime.now(HKT).isoformat(),**meta}
-    vs=False;qc=_get_qc()
-    if qc and _ens_col(col):
-        try:
-            from qdrant_client.models import PointStruct
-            qc.upsert(col,points=[PointStruct(id=pid,vector=_vec(cont),payload=payload)])
-            vs=True
-        except Exception as e:print(f"[MH] upsert err: {e}",file=sys.stderr)
-    _fsave(pid,payload)
-    _notify_daemon(DEFAULT_COL.replace("_mem",""), cont, "mcp_save")
-    return json.dumps({"status":"saved","collection":col,"point_id":pid,"vector_saved":vs,"file_saved":True,"preview":cont[:100]},ensure_ascii=False)
-
+    platform=DEFAULT_COL.replace("_mem","")
+    result=_multi_save(cont, platform=platform, tags=tags, metadata=meta, collection=col)
+    _notify_daemon(platform, cont, "mcp_save")
+    return json.dumps({"status":"saved","collection":col,"point_id":result.get("point_id",""),
+        "backends_written":result.get("ok",[]),"backends_failed":result.get("fail",[]),
+        "embed_ms":result.get("embed_time_ms",0),"total_ms":result.get("total_time_ms",0),
+        "preview":cont[:100]},ensure_ascii=False)
 def mem_search(a):
     col=a.get("collection",DEFAULT_COL);q=a["query"];lim=a.get("limit",10);tags=a.get("tags",[])
     r=[];qc=_get_qc()

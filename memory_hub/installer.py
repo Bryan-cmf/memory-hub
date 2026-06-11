@@ -14,7 +14,7 @@ from pathlib import Path
 B = "\033[1m"; N = "\033[0m"; G = "\033[32m"; C = "\033[36m"
 Y = "\033[33m"; R = "\033[31m"; D = "\033[2m\033[37m"
 
-def cls(): os.system("clear 2>/dev/null || printf '\033c'")
+def cls(): print("\033c", end="", flush=True)
 def dim(s): return f"{D}{s}{N}"
 def ok(s): return f"{G}✅{N} {s}"
 def warn(s): return f"{Y}⚠️{N} {s}"
@@ -440,7 +440,7 @@ def install_optional():
             if info["verify"]():
                 print(f"  {ok(info['name'] + ' already installed')}")
                 continue
-        except: pass
+        except Exception: pass
         print(f"  ⏳ Installing {info['name']}...")
         info["install"]()
         try:

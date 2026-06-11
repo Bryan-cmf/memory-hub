@@ -1,0 +1,4382 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "4e1a427245a396adbb156d9f879d50cec031ae7d",
+  "generatedAt": "2026-05-26T19:30:17.514Z",
+  "files": {
+    "capture_daemon.py": {
+      "filePath": "capture_daemon.py",
+      "contentHash": "d5d4b3630a588ecb0ec55ec0e7a8072be83f15e5e3be30404b7074aace14aed1",
+      "functions": [
+        {
+          "name": "mcp_intercept",
+          "params": [
+            "platform",
+            "content",
+            "tags",
+            "metadata"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_discover",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "_scan_file",
+          "params": [
+            "fp",
+            "pid",
+            "last_offset"
+          ],
+          "exported": true,
+          "lineCount": 60
+        },
+        {
+          "name": "_scan_deepseek_checkpoint",
+          "params": [
+            "fp",
+            "pid",
+            "last_count"
+          ],
+          "returnType": "list",
+          "exported": true,
+          "lineCount": 58
+        },
+        {
+          "name": "_scan_claude_markdown",
+          "params": [
+            "fp",
+            "pid",
+            "last_mtime"
+          ],
+          "returnType": "list",
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "_process",
+          "params": [
+            "pid",
+            "msg"
+          ],
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "_file_save",
+          "params": [
+            "pid",
+            "msg"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "_clean_content",
+          "params": [
+            "text"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "_parse_timestamp",
+          "params": [
+            "ts_str"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "_extract_channel",
+          "params": [
+            "msg",
+            "pid",
+            "content"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 30
+        },
+        {
+          "name": "_classify_memory",
+          "params": [
+            "role",
+            "content"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "_score_importance",
+          "params": [
+            "pid",
+            "channel",
+            "role",
+            "content"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "generate_memory_index",
+          "params": [],
+          "exported": true,
+          "lineCount": 55
+        },
+        {
+          "name": "run_scan_cycle",
+          "params": [],
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "unified_search",
+          "params": [
+            "query",
+            "limit"
+          ],
+          "exported": true,
+          "lineCount": 53
+        },
+        {
+          "name": "auto_start_qdrant",
+          "params": [],
+          "exported": true,
+          "lineCount": 48
+        },
+        {
+          "name": "auto_start_redis",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "auto_backup",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "run_daemon",
+          "params": [
+            "HUB_PORT"
+          ],
+          "exported": true,
+          "lineCount": 38
+        }
+      ],
+      "classes": [
+        {
+          "name": "DH",
+          "methods": [
+            "do_GET",
+            "do_POST",
+            "_backend_stats",
+            "log_message"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 207
+        }
+      ],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "threading",
+          "specifiers": [
+            "threading"
+          ]
+        },
+        {
+          "source": "subprocess",
+          "specifiers": [
+            "subprocess"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone",
+            "timedelta"
+          ]
+        },
+        {
+          "source": "http.server",
+          "specifiers": [
+            "HTTPServer",
+            "BaseHTTPRequestHandler"
+          ]
+        },
+        {
+          "source": "urllib.parse",
+          "specifiers": [
+            "urlparse",
+            "parse_qs",
+            "unquote"
+          ]
+        }
+      ],
+      "exports": [
+        "mcp_intercept",
+        "_discover",
+        "_scan_file",
+        "_scan_deepseek_checkpoint",
+        "_scan_claude_markdown",
+        "_process",
+        "_file_save",
+        "_clean_content",
+        "_parse_timestamp",
+        "_extract_channel",
+        "_classify_memory",
+        "_score_importance",
+        "generate_memory_index",
+        "run_scan_cycle",
+        "unified_search",
+        "auto_start_qdrant",
+        "auto_start_redis",
+        "auto_backup",
+        "DH",
+        "run_daemon"
+      ],
+      "totalLines": 1057,
+      "hasStructuralAnalysis": true
+    },
+    "hub_server.py": {
+      "filePath": "hub_server.py",
+      "contentHash": "f7152a6c0feefd9667ffc64b118f550a3367679e1369d60f3ff69432cdf2cb65",
+      "functions": [
+        {
+          "name": "process_hook",
+          "params": [
+            "platform",
+            "message"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "unified_search",
+          "params": [
+            "query",
+            "limit"
+          ],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "run",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [
+        {
+          "name": "H",
+          "methods": [
+            "do_GET",
+            "do_POST",
+            "_h",
+            "_j",
+            "log_message"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 21
+        }
+      ],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone"
+          ]
+        },
+        {
+          "source": "http.server",
+          "specifiers": [
+            "HTTPServer",
+            "BaseHTTPRequestHandler"
+          ]
+        },
+        {
+          "source": "urllib.parse",
+          "specifiers": [
+            "urlparse",
+            "parse_qs",
+            "unquote"
+          ]
+        }
+      ],
+      "exports": [
+        "process_hook",
+        "unified_search",
+        "H",
+        "run"
+      ],
+      "totalLines": 106,
+      "hasStructuralAnalysis": true
+    },
+    "test_capture.py": {
+      "filePath": "test_capture.py",
+      "contentHash": "11186124bb330ccef6ba16cd7bc1b2de6c795c6d915d64b63d0bc35a72d5a7d5",
+      "functions": [
+        {
+          "name": "test_dual_mode_capture",
+          "params": [],
+          "exported": true,
+          "lineCount": 42
+        },
+        {
+          "name": "test_four_platforms",
+          "params": [],
+          "exported": true,
+          "lineCount": 53
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "tempfile",
+          "specifiers": [
+            "tempfile"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "threading",
+          "specifiers": [
+            "threading"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        },
+        {
+          "source": "capture_daemon",
+          "specifiers": [
+            "_discover",
+            "_scan_file",
+            "_process",
+            "_file_save",
+            "run_scan_cycle",
+            "PLATFORMS",
+            "STATE",
+            "MH_DIR",
+            "CAPTURE_DIR",
+            "OFFSETS_FILE"
+          ]
+        }
+      ],
+      "exports": [
+        "test_dual_mode_capture",
+        "test_four_platforms"
+      ],
+      "totalLines": 118,
+      "hasStructuralAnalysis": true
+    },
+    "test_comprehensive.py": {
+      "filePath": "test_comprehensive.py",
+      "contentHash": "db8a8d64f4c3ba8e9e52fb1c7f146d914e4783fe645b0237b2e79d824c70d589",
+      "functions": [
+        {
+          "name": "test_integration_full_flow",
+          "params": [],
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "test_performance_large_dataset",
+          "params": [],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "test_cross_platform_paths",
+          "params": [],
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "run_all",
+          "params": [],
+          "exported": true,
+          "lineCount": 38
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "tempfile",
+          "specifiers": [
+            "tempfile"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "multiprocessing",
+          "specifiers": [
+            "multiprocessing"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timedelta"
+          ]
+        }
+      ],
+      "exports": [
+        "test_integration_full_flow",
+        "test_performance_large_dataset",
+        "test_cross_platform_paths",
+        "run_all"
+      ],
+      "totalLines": 122,
+      "hasStructuralAnalysis": true
+    },
+    "test_hub.py": {
+      "filePath": "test_hub.py",
+      "contentHash": "712482bbe9907f0e1324d4ab6aaebb4d2971b32278b929944fe61120c7e0532b",
+      "functions": [
+        {
+          "name": "test_health",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "test_post_hook",
+          "params": [],
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "test_search",
+          "params": [],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "test_state",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "urllib.request",
+          "specifiers": [
+            "urllib.request"
+          ]
+        },
+        {
+          "source": "urllib.error",
+          "specifiers": [
+            "urllib.error"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "threading",
+          "specifiers": [
+            "threading"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "test_health",
+        "test_post_hook",
+        "test_search",
+        "test_state"
+      ],
+      "totalLines": 109,
+      "hasStructuralAnalysis": true
+    },
+    "tests/run_full_test.py": {
+      "filePath": "tests/run_full_test.py",
+      "contentHash": "3b858f23656272412212ac2c03899efccbb5653f4562beb85f4f68b7d94e46da",
+      "functions": [
+        {
+          "name": "check",
+          "params": [
+            "name",
+            "condition",
+            "detail",
+            "warn_only"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "get_json",
+          "params": [
+            "url",
+            "timeout"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "post_json",
+          "params": [
+            "url",
+            "data",
+            "timeout"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "run",
+          "params": [
+            "cmd",
+            "**kwargs"
+          ],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "step_environment",
+          "params": [],
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "step_mock_data",
+          "params": [],
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "step_install",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "step_start_daemon",
+          "params": [],
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "step_mode_b",
+          "params": [
+            "expected_msgs"
+          ],
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "step_mode_a",
+          "params": [],
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "step_apis",
+          "params": [],
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "step_verify",
+          "params": [],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "step_mcp_server",
+          "params": [],
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "step_cleanup",
+          "params": [],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "main",
+          "params": [],
+          "exported": true,
+          "lineCount": 53
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "shutil",
+          "specifiers": [
+            "shutil"
+          ]
+        },
+        {
+          "source": "subprocess",
+          "specifiers": [
+            "subprocess"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "urllib.request",
+          "specifiers": [
+            "urllib.request"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "check",
+        "get_json",
+        "post_json",
+        "run",
+        "step_environment",
+        "step_mock_data",
+        "step_install",
+        "step_start_daemon",
+        "step_mode_b",
+        "step_mode_a",
+        "step_apis",
+        "step_verify",
+        "step_mcp_server",
+        "step_cleanup",
+        "main"
+      ],
+      "totalLines": 411,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/backup.py": {
+      "filePath": "memory_hub/backup.py",
+      "contentHash": "241e67ff73904b05e9fc1c9d0be9d58a9622926453ee96dfecf5caa8e483a265",
+      "functions": [
+        {
+          "name": "load_state",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "save_state",
+          "params": [
+            "s"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "backup_qdrant",
+          "params": [
+            "tier_dir"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "backup_files",
+          "params": [
+            "tier_dir"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "backup_configs",
+          "params": [
+            "tier_dir"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "run_backup",
+          "params": [
+            "tier"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "create_backup",
+          "params": [
+            "tier"
+          ],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "cleanup_old",
+          "params": [
+            "tier"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "restore_backup",
+          "params": [
+            "tier",
+            "num"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "status",
+          "params": [],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "tui",
+          "params": [],
+          "exported": true,
+          "lineCount": 23
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "tarfile",
+          "specifiers": [
+            "tarfile"
+          ]
+        },
+        {
+          "source": "shutil",
+          "specifiers": [
+            "shutil"
+          ]
+        },
+        {
+          "source": "subprocess",
+          "specifiers": [
+            "subprocess"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone",
+            "timedelta"
+          ]
+        }
+      ],
+      "exports": [
+        "load_state",
+        "save_state",
+        "backup_qdrant",
+        "backup_files",
+        "backup_configs",
+        "run_backup",
+        "create_backup",
+        "cleanup_old",
+        "restore_backup",
+        "status",
+        "tui"
+      ],
+      "totalLines": 153,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/cli.py": {
+      "filePath": "memory_hub/cli.py",
+      "contentHash": "f8afbef3c6c0b96540fe524f0ab387ac46aba7fc447e388352303c21dc579e8f",
+      "functions": [
+        {
+          "name": "cmd_setup",
+          "params": [
+            "args"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "cmd_start",
+          "params": [
+            "args"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "cmd_status",
+          "params": [
+            "args"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "cmd_stop",
+          "params": [
+            "args"
+          ],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "cmd_verify",
+          "params": [
+            "args"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "cmd_backup",
+          "params": [
+            "args"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "main",
+          "params": [],
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "argparse",
+          "specifiers": [
+            "argparse"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "cmd_setup",
+        "cmd_start",
+        "cmd_status",
+        "cmd_stop",
+        "cmd_verify",
+        "cmd_backup",
+        "main"
+      ],
+      "totalLines": 87,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/installer.py": {
+      "filePath": "memory_hub/installer.py",
+      "contentHash": "9a3f118bc1ced5c2a4d53c23bd6f4f5de84fffab1ae9fa4e532c9ecccff05cc5",
+      "functions": [
+        {
+          "name": "cls",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "dim",
+          "params": [
+            "s"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "ok",
+          "params": [
+            "s"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "warn",
+          "params": [
+            "s"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "err",
+          "params": [
+            "s"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "title",
+          "params": [
+            "s"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "box",
+          "params": [
+            "text",
+            "w"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "section",
+          "params": [
+            "hdr"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "detect_environment",
+          "params": [],
+          "exported": true,
+          "lineCount": 49
+        },
+        {
+          "name": "check_environment",
+          "params": [
+            "env"
+          ],
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "install_qdrant",
+          "params": [],
+          "exported": true,
+          "lineCount": 61
+        },
+        {
+          "name": "ensure_collections",
+          "params": [],
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "install_core",
+          "params": [
+            "env"
+          ],
+          "exported": true,
+          "lineCount": 45
+        },
+        {
+          "name": "install_redis",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "install_pgvector",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "install_elasticsearch",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "install_mongodb",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "install_optional",
+          "params": [],
+          "exported": true,
+          "lineCount": 87
+        },
+        {
+          "name": "configure_mcp",
+          "params": [
+            "env"
+          ],
+          "exported": true,
+          "lineCount": 69
+        },
+        {
+          "name": "post_install_verify",
+          "params": [],
+          "exported": true,
+          "lineCount": 41
+        },
+        {
+          "name": "run_setup",
+          "params": [],
+          "exported": true,
+          "lineCount": 54
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "subprocess",
+          "specifiers": [
+            "subprocess"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "shutil",
+          "specifiers": [
+            "shutil"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "cls",
+        "dim",
+        "ok",
+        "warn",
+        "err",
+        "title",
+        "box",
+        "section",
+        "detect_environment",
+        "check_environment",
+        "install_qdrant",
+        "ensure_collections",
+        "install_core",
+        "install_redis",
+        "install_pgvector",
+        "install_elasticsearch",
+        "install_mongodb",
+        "install_optional",
+        "configure_mcp",
+        "post_install_verify",
+        "run_setup"
+      ],
+      "totalLines": 675,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/verify.py": {
+      "filePath": "memory_hub/verify.py",
+      "contentHash": "cf92698b10b143e50e71d531361c2e6d99075283ce13304f68f0ecfb333cdbe1",
+      "functions": [
+        {
+          "name": "check",
+          "params": [
+            "label",
+            "ok",
+            "detail"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "status_detail",
+          "params": [],
+          "exported": true,
+          "lineCount": 218
+        },
+        {
+          "name": "run_verify",
+          "params": [],
+          "exported": true,
+          "lineCount": 98
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "urllib.request",
+          "specifiers": [
+            "urllib.request"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone",
+            "timedelta"
+          ]
+        }
+      ],
+      "exports": [
+        "check",
+        "status_detail",
+        "run_verify"
+      ],
+      "totalLines": 343,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/backends.py": {
+      "filePath": "memory_hub/backends.py",
+      "contentHash": "eab373588171d1d15e865048e3b8ff363c2cdbef944c902f57041592ca83b850",
+      "functions": [
+        {
+          "name": "load_config",
+          "params": [],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "save_config",
+          "params": [
+            "cfg"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "_get_em",
+          "params": [],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "embed",
+          "params": [
+            "text"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "_write_qdrant",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "_write_chroma",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "_write_lancedb",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "_write_sqlite_vec",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "_write_faiss",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "_write_redis",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "_write_postgresql",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "_write_elasticsearch",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "_write_mongodb",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "_write_neo4j",
+          "params": [
+            "cfg",
+            "pid",
+            "vec",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "multi_save",
+          "params": [
+            "content",
+            "platform",
+            "tags",
+            "metadata",
+            "collection"
+          ],
+          "exported": true,
+          "lineCount": 42
+        },
+        {
+          "name": "health_check",
+          "params": [],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "uuid",
+          "specifiers": [
+            "uuid"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "logging",
+          "specifiers": [
+            "logging"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone",
+            "timedelta"
+          ]
+        }
+      ],
+      "exports": [
+        "load_config",
+        "save_config",
+        "_get_em",
+        "embed",
+        "_write_qdrant",
+        "_write_chroma",
+        "_write_lancedb",
+        "_write_sqlite_vec",
+        "_write_faiss",
+        "_write_redis",
+        "_write_postgresql",
+        "_write_elasticsearch",
+        "_write_mongodb",
+        "_write_neo4j",
+        "multi_save",
+        "health_check"
+      ],
+      "totalLines": 360,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/daemon.py": {
+      "filePath": "memory_hub/daemon.py",
+      "contentHash": "17088d2809ba4ae1699f1200e10984081a9be484e1624a4d8b91a779c620fba9",
+      "functions": [
+        {
+          "name": "mcp_intercept",
+          "params": [
+            "platform",
+            "content",
+            "tags",
+            "metadata"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_discover",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "_scan_file",
+          "params": [
+            "fp",
+            "pid",
+            "last_offset"
+          ],
+          "exported": true,
+          "lineCount": 50
+        },
+        {
+          "name": "_scan_deepseek_checkpoint",
+          "params": [
+            "fp",
+            "pid",
+            "last_count"
+          ],
+          "returnType": "list",
+          "exported": true,
+          "lineCount": 51
+        },
+        {
+          "name": "_scan_claude_markdown",
+          "params": [
+            "fp",
+            "pid",
+            "last_mtime"
+          ],
+          "returnType": "list",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "_process",
+          "params": [
+            "pid",
+            "msg"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "_file_save",
+          "params": [
+            "pid",
+            "msg"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "run_scan_cycle",
+          "params": [],
+          "exported": true,
+          "lineCount": 40
+        },
+        {
+          "name": "unified_search",
+          "params": [
+            "query",
+            "limit"
+          ],
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "auto_start_qdrant",
+          "params": [],
+          "exported": true,
+          "lineCount": 48
+        },
+        {
+          "name": "auto_start_redis",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "auto_backup",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "run_daemon",
+          "params": [
+            "HUB_PORT"
+          ],
+          "exported": true,
+          "lineCount": 30
+        }
+      ],
+      "classes": [
+        {
+          "name": "DH",
+          "methods": [
+            "do_GET",
+            "do_POST",
+            "log_message"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 268
+        }
+      ],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "threading",
+          "specifiers": [
+            "threading"
+          ]
+        },
+        {
+          "source": "subprocess",
+          "specifiers": [
+            "subprocess"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone",
+            "timedelta"
+          ]
+        },
+        {
+          "source": "http.server",
+          "specifiers": [
+            "HTTPServer",
+            "BaseHTTPRequestHandler"
+          ]
+        },
+        {
+          "source": "memory_hub.backends",
+          "specifiers": [
+            "_multi_save"
+          ]
+        },
+        {
+          "source": "urllib.parse",
+          "specifiers": [
+            "urlparse",
+            "parse_qs",
+            "unquote"
+          ]
+        }
+      ],
+      "exports": [
+        "mcp_intercept",
+        "_discover",
+        "_scan_file",
+        "_scan_deepseek_checkpoint",
+        "_scan_claude_markdown",
+        "_process",
+        "_file_save",
+        "run_scan_cycle",
+        "unified_search",
+        "auto_start_qdrant",
+        "auto_start_redis",
+        "auto_backup",
+        "DH",
+        "run_daemon"
+      ],
+      "totalLines": 842,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/server/mcp_server.py": {
+      "filePath": "memory_hub/server/mcp_server.py",
+      "contentHash": "0e2e2f42bac49d9c95ef5dea1580dd6cec3601f662f00ed84ed39a3c3c4af0e4",
+      "functions": [
+        {
+          "name": "_notify_daemon",
+          "params": [
+            "platform",
+            "content",
+            "role"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_get_em",
+          "params": [],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "_get_qc",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "_vec",
+          "params": [
+            "t"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "_ens_col",
+          "params": [
+            "cn"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "_fsave",
+          "params": [
+            "pid",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "_fsearch",
+          "params": [
+            "q",
+            "tags",
+            "lim"
+          ],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "mem_save",
+          "params": [
+            "a"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "mem_search",
+          "params": [
+            "a"
+          ],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "mem_stats",
+          "params": [
+            "a"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "mem_list",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "mem_delete",
+          "params": [
+            "a"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "capture_send",
+          "params": [
+            "a"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "run",
+          "params": [],
+          "exported": true,
+          "lineCount": 27
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "uuid",
+          "specifiers": [
+            "uuid"
+          ]
+        },
+        {
+          "source": "asyncio",
+          "specifiers": [
+            "asyncio"
+          ]
+        },
+        {
+          "source": "urllib.request",
+          "specifiers": [
+            "urllib.request"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone",
+            "timedelta"
+          ]
+        },
+        {
+          "source": "memory_hub.backends",
+          "specifiers": [
+            "embed",
+            "_multi_save"
+          ]
+        }
+      ],
+      "exports": [
+        "_notify_daemon",
+        "_get_em",
+        "_get_qc",
+        "_vec",
+        "_ens_col",
+        "_fsave",
+        "_fsearch",
+        "mem_save",
+        "mem_search",
+        "mem_stats",
+        "mem_list",
+        "mem_delete",
+        "capture_send",
+        "run"
+      ],
+      "totalLines": 169,
+      "hasStructuralAnalysis": true
+    },
+    ".github/workflows/ci.yml": {
+      "filePath": ".github/workflows/ci.yml",
+      "contentHash": "9162d2894d5ef23cdbcc838c0fd4097ffebd0e6311a77dad0b89eba1576180da",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    ".env.example": {
+      "filePath": ".env.example",
+      "contentHash": "9f268890046a10f8979223babc30312bff3040fb706575f203cb3a85f6a46a9a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 11,
+      "hasStructuralAnalysis": true
+    },
+    ".gitignore": {
+      "filePath": ".gitignore",
+      "contentHash": "24ef59d45f090e9d626b490d1e5d6ded8d7c776449bac1b434478b5e4b8d77fd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": false
+    },
+    "docker-compose.yml": {
+      "filePath": "docker-compose.yml",
+      "contentHash": "f402de79c4b9564acc06ac47af7525b9d0a96be97e174a3fd6a6152eef11e1f9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 27,
+      "hasStructuralAnalysis": true
+    },
+    "package.json": {
+      "filePath": "package.json",
+      "contentHash": "271b4e8b3c313c6ff96de60702c52b60c89782c7793888958b8275bb2c9fc66a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "pyproject.toml": {
+      "filePath": "pyproject.toml",
+      "contentHash": "a4ec7c3d8af282a0b4af3cfe227c21ea4add943627020db7128840dc9faa5368",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "requirements.txt": {
+      "filePath": "requirements.txt",
+      "contentHash": "0127578a1f97d4420cf8122ddad452f5eb75e55b8bb9ac371072c22a5820dd7b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 3,
+      "hasStructuralAnalysis": false
+    },
+    "API.md": {
+      "filePath": "API.md",
+      "contentHash": "9e6c399e41ab5a4cd1d2a46f8c26503bad3e3813f386a935c790ad2569d7638b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 102,
+      "hasStructuralAnalysis": true
+    },
+    "ARCHITECTURE.md": {
+      "filePath": "ARCHITECTURE.md",
+      "contentHash": "cef463339defd7436300ce073677cd631faa77188b416b88c2ea192e96debaea",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    "ARCHIVE.md": {
+      "filePath": "ARCHIVE.md",
+      "contentHash": "6c88e01597809b68fa927a73dcca044b23404a5d34fc0fbe895dce0e69ae0936",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 28,
+      "hasStructuralAnalysis": true
+    },
+    "CHANGELOG.md": {
+      "filePath": "CHANGELOG.md",
+      "contentHash": "faef30995941fe9644e6734b20abd7fb952b62fcb1286e92956ba5fb3ddc3c38",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 44,
+      "hasStructuralAnalysis": true
+    },
+    "CONTRIBUTING.md": {
+      "filePath": "CONTRIBUTING.md",
+      "contentHash": "4534581a83b8a58cef65d717e0e278b4c7f88ba7a0232cd4c5bd46f2c9105117",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "INSTALL.md": {
+      "filePath": "INSTALL.md",
+      "contentHash": "fd79ef8bf8b887956735b4657953d1625f823ee27fe7504291c6259d546dff8b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 118,
+      "hasStructuralAnalysis": true
+    },
+    "LICENSE": {
+      "filePath": "LICENSE",
+      "contentHash": "761eff05310a93680fbc4850f6605a190bb38706c994e8b17614685b490cb41c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": false
+    },
+    "MEMORY_TEMPLATE.md": {
+      "filePath": "MEMORY_TEMPLATE.md",
+      "contentHash": "9dbbee033c93bc9e3f00ef0ea3be7841f1e18be8168e8745ae4fd3e14cfdbc9b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 40,
+      "hasStructuralAnalysis": true
+    },
+    "QUICKSTART.md": {
+      "filePath": "QUICKSTART.md",
+      "contentHash": "925ea4b75e433ad308561169793d129c1fac5b98630412c09051fb5342e52da6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 44,
+      "hasStructuralAnalysis": true
+    },
+    "backend_installer.py": {
+      "filePath": "backend_installer.py",
+      "contentHash": "d19ea7a5e7976609b047dfada6106bec5fa16b2f8eb3dbb6873cbcb67e67a6f8",
+      "functions": [
+        {
+          "name": "cls",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "box",
+          "params": [
+            "t",
+            "w"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "getch",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "read_key",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "detect",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "load_cfg",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "save_cfg",
+          "params": [
+            "cfg"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "real_install",
+          "params": [
+            "bid",
+            "cb"
+          ],
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "auto_connect",
+          "params": [
+            "installed_list"
+          ],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "tui",
+          "params": [],
+          "exported": true,
+          "lineCount": 95
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "subprocess",
+          "specifiers": [
+            "subprocess"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "termios",
+          "specifiers": [
+            "termios"
+          ]
+        },
+        {
+          "source": "tty",
+          "specifiers": [
+            "tty"
+          ]
+        },
+        {
+          "source": "urllib.request",
+          "specifiers": [
+            "urllib.request"
+          ]
+        },
+        {
+          "source": "platform",
+          "specifiers": [
+            "pf"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "cls",
+        "box",
+        "getch",
+        "read_key",
+        "detect",
+        "load_cfg",
+        "save_cfg",
+        "real_install",
+        "auto_connect",
+        "tui"
+      ],
+      "totalLines": 228,
+      "hasStructuralAnalysis": true
+    },
+    "cli_help.py": {
+      "filePath": "cli_help.py",
+      "contentHash": "6274deaff75752c4e539f4e3a01bb71d3c4a4781c5e1efbd38fe965b3db34848",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 35,
+      "hasStructuralAnalysis": true
+    },
+    "entities/index.md": {
+      "filePath": "entities/index.md",
+      "contentHash": "70094190e102f0d8e5bb893c21fa08c8d04f60dd5820b64db60bc143f39a75f1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "_audit_check.py": {
+      "filePath": "_audit_check.py",
+      "contentHash": "1b1c4a5dc75b1c06769ed758e67ba1a5be9d2a2d45ae486c030e9c05acbd655d",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 21,
+      "hasStructuralAnalysis": true
+    },
+    "advanced_features.py": {
+      "filePath": "advanced_features.py",
+      "contentHash": "f06d94eb15e837cd021c71d7f555fdecaa36f16e1764144697a0bcfbc3218f45",
+      "functions": [
+        {
+          "name": "auto_tag",
+          "params": [
+            "content"
+          ],
+          "returnType": "list",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "webhook_push",
+          "params": [
+            "webhook_url",
+            "title",
+            "content",
+            "tags"
+          ],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "get_user_collection",
+          "params": [
+            "user_id"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "export_obsidian",
+          "params": [
+            "memories",
+            "output_dir"
+          ],
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "export_notion",
+          "params": [
+            "memories",
+            "output_file"
+          ],
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "auto_tag",
+        "webhook_push",
+        "get_user_collection",
+        "export_obsidian",
+        "export_notion"
+      ],
+      "totalLines": 104,
+      "hasStructuralAnalysis": true
+    },
+    "association_search.py": {
+      "filePath": "association_search.py",
+      "contentHash": "f83a0eea40849fe7a4aa2af12c459378eba63c06b51121e96f24fd11a95598cb",
+      "functions": [
+        {
+          "name": "trace_decision_chain",
+          "params": [
+            "keyword",
+            "max_depth"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 41
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "trace_decision_chain"
+      ],
+      "totalLines": 56,
+      "hasStructuralAnalysis": true
+    },
+    "consolidate.py": {
+      "filePath": "consolidate.py",
+      "contentHash": "76c63a5baa6ba75707a60b0f3a075a329cad630ebef2f28afb5285ac6d2f1fe8",
+      "functions": [
+        {
+          "name": "get_week_range",
+          "params": [
+            "date"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "consolidate_weekly",
+          "params": [
+            "year",
+            "month",
+            "week"
+          ],
+          "exported": true,
+          "lineCount": 45
+        },
+        {
+          "name": "consolidate_monthly",
+          "params": [
+            "year",
+            "month"
+          ],
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "consolidate_yearly",
+          "params": [
+            "year"
+          ],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timedelta"
+          ]
+        }
+      ],
+      "exports": [
+        "get_week_range",
+        "consolidate_weekly",
+        "consolidate_monthly",
+        "consolidate_yearly"
+      ],
+      "totalLines": 128,
+      "hasStructuralAnalysis": true
+    },
+    "dedup.py": {
+      "filePath": "dedup.py",
+      "contentHash": "a22224d135a32531c17f281f4fc67cb0ff439c4329f210f2e0bf53dd8d9494c4",
+      "functions": [
+        {
+          "name": "content_uuid5",
+          "params": [
+            "content"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "text_similarity",
+          "params": [
+            "a",
+            "b"
+          ],
+          "returnType": "float",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "deduplicate_entries",
+          "params": [
+            "entries",
+            "threshold"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 34
+        },
+        {
+          "name": "detect_milestones",
+          "params": [
+            "entries"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 21
+        }
+      ],
+      "classes": [
+        {
+          "name": "DedupFilter",
+          "methods": [
+            "__init__",
+            "should_capture",
+            "reset_stats"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 50
+        }
+      ],
+      "imports": [
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "uuid",
+          "specifiers": [
+            "uuid"
+          ]
+        },
+        {
+          "source": "hashlib",
+          "specifiers": [
+            "hashlib"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "content_uuid5",
+        "DedupFilter",
+        "text_similarity",
+        "deduplicate_entries",
+        "detect_milestones"
+      ],
+      "totalLines": 159,
+      "hasStructuralAnalysis": true
+    },
+    "encryption.py": {
+      "filePath": "encryption.py",
+      "contentHash": "ae2f5a4a528453bde47a9dc7977351668fff461cc70a71b661402e727ac6337a",
+      "functions": [
+        {
+          "name": "get_or_create_key",
+          "params": [],
+          "returnType": "bytes",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "encrypt_content",
+          "params": [
+            "content"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "decrypt_content",
+          "params": [
+            "encrypted"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "hard_delete_memory",
+          "params": [
+            "collection",
+            "point_id",
+            "memory_dir"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "hashlib",
+          "specifiers": [
+            "hashlib"
+          ]
+        },
+        {
+          "source": "base64",
+          "specifiers": [
+            "base64"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone"
+          ]
+        },
+        {
+          "source": "cryptography.fernet",
+          "specifiers": [
+            "Fernet"
+          ]
+        }
+      ],
+      "exports": [
+        "get_or_create_key",
+        "encrypt_content",
+        "decrypt_content",
+        "hard_delete_memory"
+      ],
+      "totalLines": 78,
+      "hasStructuralAnalysis": true
+    },
+    "entity_graph.py": {
+      "filePath": "entity_graph.py",
+      "contentHash": "9e3aee4667b4be6bb7088bb76013efcebd92de5476540fac9138a9314f7dda06",
+      "functions": [
+        {
+          "name": "extract_entities_from_text",
+          "params": [
+            "text"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "build_graph",
+          "params": [
+            "memory_dir"
+          ],
+          "exported": true,
+          "lineCount": 40
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "extract_entities_from_text",
+        "build_graph"
+      ],
+      "totalLines": 77,
+      "hasStructuralAnalysis": true
+    },
+    "export.py": {
+      "filePath": "export.py",
+      "contentHash": "476ce766c87ffd263665ee5fcd6fb3984df2fd2c18d9055b5c3d43e336849626",
+      "functions": [
+        {
+          "name": "export_json",
+          "params": [
+            "output_path"
+          ],
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "export_csv",
+          "params": [
+            "output_path"
+          ],
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "generate_stats",
+          "params": [],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "csv",
+          "specifiers": [
+            "csv"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "export_json",
+        "export_csv",
+        "generate_stats"
+      ],
+      "totalLines": 79,
+      "hasStructuralAnalysis": true
+    },
+    "health_report.py": {
+      "filePath": "health_report.py",
+      "contentHash": "27d0ddb830531c41e0b567bedc7444238db1f30a770fa10f83e14460b0359e2c",
+      "functions": [
+        {
+          "name": "_check_qdrant",
+          "params": [],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_check_capture_daemon",
+          "params": [],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "_check_scanner",
+          "params": [],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "_check_memory_files",
+          "params": [],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "generate_full_health_report",
+          "params": [],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 35
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "subprocess",
+          "specifiers": [
+            "subprocess"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone"
+          ]
+        }
+      ],
+      "exports": [
+        "_check_qdrant",
+        "_check_capture_daemon",
+        "_check_scanner",
+        "_check_memory_files",
+        "generate_full_health_report"
+      ],
+      "totalLines": 143,
+      "hasStructuralAnalysis": true
+    },
+    "hybrid_search.py": {
+      "filePath": "hybrid_search.py",
+      "contentHash": "145b5acb497953d4f1f92414259e58beba5a6e5aecd3327d6dabf5d8896ccc1b",
+      "functions": [
+        {
+          "name": "load_config",
+          "params": [],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "parse_time_range",
+          "params": [
+            "query"
+          ],
+          "returnType": "tuple",
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "search_files",
+          "params": [
+            "query",
+            "since",
+            "until",
+            "path_filter"
+          ],
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "hybrid_search",
+          "params": [
+            "query",
+            "since",
+            "until",
+            "entities",
+            "tags",
+            "limit"
+          ],
+          "exported": true,
+          "lineCount": 30
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timedelta"
+          ]
+        }
+      ],
+      "exports": [
+        "load_config",
+        "parse_time_range",
+        "search_files",
+        "hybrid_search"
+      ],
+      "totalLines": 105,
+      "hasStructuralAnalysis": true
+    },
+    "index_generator.py": {
+      "filePath": "index_generator.py",
+      "contentHash": "bad2abcd982904a4ebc0cf0746d063489ae01ec2e0d13bf6870da0d456dd419b",
+      "functions": [
+        {
+          "name": "generate_index",
+          "params": [
+            "memory_root"
+          ],
+          "exported": true,
+          "lineCount": 46
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "collections",
+          "specifiers": [
+            "Counter"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_index"
+      ],
+      "totalLines": 58,
+      "hasStructuralAnalysis": true
+    },
+    "migrate_to_timeline.py": {
+      "filePath": "migrate_to_timeline.py",
+      "contentHash": "ee46601f7769a0f339095d3dbabe3f52db7455d5374166d81548746e3e6dcd20",
+      "functions": [
+        {
+          "name": "migrate_daily_logs",
+          "params": [],
+          "exported": true,
+          "lineCount": 25
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "migrate_daily_logs"
+      ],
+      "totalLines": 40,
+      "hasStructuralAnalysis": true
+    },
+    "quality.py": {
+      "filePath": "quality.py",
+      "contentHash": "0cab7bca220214871077dbd56cc96481c3121c45c767ea55fd8cef5e75e1e4a1",
+      "functions": [
+        {
+          "name": "check_memory_integrity",
+          "params": [],
+          "exported": true,
+          "lineCount": 41
+        },
+        {
+          "name": "mark_quality",
+          "params": [
+            "content",
+            "source_count"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "detect_contradiction",
+          "params": [
+            "new_content",
+            "existing_entries"
+          ],
+          "returnType": "list",
+          "exported": true,
+          "lineCount": 17
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone"
+          ]
+        }
+      ],
+      "exports": [
+        "check_memory_integrity",
+        "mark_quality",
+        "detect_contradiction"
+      ],
+      "totalLines": 82,
+      "hasStructuralAnalysis": true
+    },
+    "security.py": {
+      "filePath": "security.py",
+      "contentHash": "6bf2c4e6ecaa29d3551819804d7ca05e24f7ecdcda4f2f6925cc7b153e717bfb",
+      "functions": [
+        {
+          "name": "scan_for_secrets",
+          "params": [
+            "content"
+          ],
+          "returnType": "list",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "redact_content",
+          "params": [
+            "content"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "log_access",
+          "params": [
+            "action",
+            "details"
+          ],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "hash_content",
+          "params": [
+            "content"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "hashlib",
+          "specifiers": [
+            "hashlib"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone"
+          ]
+        }
+      ],
+      "exports": [
+        "scan_for_secrets",
+        "redact_content",
+        "log_access",
+        "hash_content"
+      ],
+      "totalLines": 61,
+      "hasStructuralAnalysis": true
+    },
+    "timeline.py": {
+      "filePath": "timeline.py",
+      "contentHash": "a7298cea7f0138e78d97cca67187ec85a64263d9c3504eea17640559f7c0715e",
+      "functions": [
+        {
+          "name": "generate_timeline",
+          "params": [],
+          "exported": true,
+          "lineCount": 37
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_timeline"
+      ],
+      "totalLines": 48,
+      "hasStructuralAnalysis": true
+    },
+    "yearbook.py": {
+      "filePath": "yearbook.py",
+      "contentHash": "909600ec9262306ba66ea9cc76772120964f7074077260b80edc84722c41fbfa",
+      "functions": [
+        {
+          "name": "gen",
+          "params": [
+            "y",
+            "o"
+          ],
+          "exported": true,
+          "lineCount": 17
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "gen"
+      ],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "test_memoryhub.py": {
+      "filePath": "test_memoryhub.py",
+      "contentHash": "d694b8f4df5327c2f397efd3005ada8721fa7301d1b25b1089de08271dff0d5d",
+      "functions": [
+        {
+          "name": "test_scanner_empty_file",
+          "params": [],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "test_scanner_malformed_json",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "test_safe_content_null",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "test_is_valuable",
+          "params": [],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "test_parse_time_range",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "test_export_json",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "test_secret_detection",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "run_all",
+          "params": [],
+          "exported": true,
+          "lineCount": 23
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "tempfile",
+          "specifiers": [
+            "tempfile"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "test_scanner_empty_file",
+        "test_scanner_malformed_json",
+        "test_safe_content_null",
+        "test_is_valuable",
+        "test_parse_time_range",
+        "test_export_json",
+        "test_secret_detection",
+        "run_all"
+      ],
+      "totalLines": 92,
+      "hasStructuralAnalysis": true
+    },
+    "scanner/session_scanner.py": {
+      "filePath": "scanner/session_scanner.py",
+      "contentHash": "01893bb20bd21a719a8fa3dce28ff3451cff1798f1a9d09effe9d09ffa719e71",
+      "functions": [
+        {
+          "name": "acquire_lock",
+          "params": [],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "load_state",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "save_state",
+          "params": [
+            "s"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "sc",
+          "params": [
+            "line"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "is_noise",
+          "params": [
+            "line"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "extract_exchanges",
+          "params": [
+            "lines"
+          ],
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "is_valuable",
+          "params": [
+            "ex"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "gs",
+          "params": [
+            "ex"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "read_lines",
+          "params": [
+            "fp",
+            "offset"
+          ],
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "sk",
+          "params": [
+            "d",
+            "fn"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "scan_sessions",
+          "params": [
+            "dirs"
+          ],
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "extract_entities_from_exchanges",
+          "params": [
+            "lines"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "scan_sessions_with_entities",
+          "params": [
+            "dirs"
+          ],
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone"
+          ]
+        }
+      ],
+      "exports": [
+        "acquire_lock",
+        "load_state",
+        "save_state",
+        "sc",
+        "is_noise",
+        "extract_exchanges",
+        "is_valuable",
+        "gs",
+        "read_lines",
+        "sk",
+        "scan_sessions",
+        "extract_entities_from_exchanges",
+        "scan_sessions_with_entities"
+      ],
+      "totalLines": 184,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/sync_engine.py": {
+      "filePath": "memory_hub/sync_engine.py",
+      "contentHash": "52eb481a2d5bef8230c49d71bdbcc18d25accd768a07f9f864b85596980b2b59",
+      "functions": [
+        {
+          "name": "_get_embedding",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "_vectorize",
+          "params": [
+            "text"
+          ],
+          "returnType": "list",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_qdrant_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "_qdrant_ensure_collection",
+          "params": [
+            "name"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "sync_to_qdrant",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "_chroma_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "sync_to_chroma",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "_lancedb_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "sync_to_lancedb",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "sync_capture",
+          "params": [
+            "pid",
+            "msg"
+          ],
+          "exported": true,
+          "lineCount": 34
+        },
+        {
+          "name": "get_all_stats",
+          "params": [],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 128
+        },
+        {
+          "name": "_sqlitevec_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "sync_to_sqlitevec",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "_faiss_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "sync_to_faiss",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "_redis_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "_get_redis",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "sync_to_redis",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_pgvector_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "_get_pg",
+          "params": [],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "sync_to_pgvector",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "_elasticsearch_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "_get_es",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "sync_to_elasticsearch",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "_mongodb_available",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "_get_mongo",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "sync_to_mongodb",
+          "params": [
+            "collection",
+            "content",
+            "metadata"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "uuid",
+          "specifiers": [
+            "uuid"
+          ]
+        },
+        {
+          "source": "hashlib",
+          "specifiers": [
+            "hashlib"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone",
+            "timedelta"
+          ]
+        }
+      ],
+      "exports": [
+        "_get_embedding",
+        "_vectorize",
+        "_qdrant_available",
+        "_qdrant_ensure_collection",
+        "sync_to_qdrant",
+        "_chroma_available",
+        "sync_to_chroma",
+        "_lancedb_available",
+        "sync_to_lancedb",
+        "sync_capture",
+        "get_all_stats",
+        "_sqlitevec_available",
+        "sync_to_sqlitevec",
+        "_faiss_available",
+        "sync_to_faiss",
+        "_redis_available",
+        "_get_redis",
+        "sync_to_redis",
+        "_pgvector_available",
+        "_get_pg",
+        "sync_to_pgvector",
+        "_elasticsearch_available",
+        "_get_es",
+        "sync_to_elasticsearch",
+        "_mongodb_available",
+        "_get_mongo",
+        "sync_to_mongodb"
+      ],
+      "totalLines": 507,
+      "hasStructuralAnalysis": true
+    },
+    "scripts/homebrew/memory-hub.rb": {
+      "filePath": "scripts/homebrew/memory-hub.rb",
+      "contentHash": "1a069d4b2b26f7a20913aed093007da021009efd73ee36a8623d5caef85a3197",
+      "functions": [
+        {
+          "name": "install",
+          "params": [],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "post_install",
+          "params": [],
+          "exported": false,
+          "lineCount": 5
+        }
+      ],
+      "classes": [
+        {
+          "name": "MemoryHub",
+          "methods": [
+            "install",
+            "post_install"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 22
+        }
+      ],
+      "imports": [],
+      "exports": [
+        "MemoryHub"
+      ],
+      "totalLines": 27,
+      "hasStructuralAnalysis": true
+    },
+    "scripts/systemd/memoryhub-capture-daemon.service": {
+      "filePath": "scripts/systemd/memoryhub-capture-daemon.service",
+      "contentHash": "85589406dcd522b5965d27066cfa106b8f42b1a6be1669d882c8a045a8c1423c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 19,
+      "hasStructuralAnalysis": false
+    },
+    "tests/__init__.py": {
+      "filePath": "tests/__init__.py",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": true
+    },
+    "tests/mock_data.py": {
+      "filePath": "tests/mock_data.py",
+      "contentHash": "549c672e2c0c2e8ba0a2356bb80b978367ec25bf36b06b3373de0990c9f3afd5",
+      "functions": [
+        {
+          "name": "generate_openclaw_sessions",
+          "params": [
+            "home"
+          ],
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "generate_hermes_sessions",
+          "params": [
+            "home"
+          ],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "generate_deepseek_sessions",
+          "params": [
+            "home"
+          ],
+          "exported": true,
+          "lineCount": 58
+        },
+        {
+          "name": "generate_claude_sessions",
+          "params": [
+            "home"
+          ],
+          "exported": true,
+          "lineCount": 58
+        },
+        {
+          "name": "generate_all",
+          "params": [
+            "home"
+          ],
+          "exported": true,
+          "lineCount": 41
+        },
+        {
+          "name": "count_messages",
+          "params": [
+            "files"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone",
+            "timedelta"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_openclaw_sessions",
+        "generate_hermes_sessions",
+        "generate_deepseek_sessions",
+        "generate_claude_sessions",
+        "generate_all",
+        "count_messages"
+      ],
+      "totalLines": 298,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/__init__.py": {
+      "filePath": "memory_hub/__init__.py",
+      "contentHash": "279c1e688604dbe6b8097cfbbd2d8bc2f5bafb3c235fd58e022aafeaeb7af62a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": true
+    },
+    "memory_hub/server/__init__.py": {
+      "filePath": "memory_hub/server/__init__.py",
+      "contentHash": "e07da2b80655a45fedf49458ad256ad41888bfd047bb5987a3f8b9f5b6ac6836",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    "tui/app.py": {
+      "filePath": "tui/app.py",
+      "contentHash": "bc68c951fde6581e65031bb5588591b36a8571f480cccb3036fc5d83448ef9af",
+      "functions": [
+        {
+          "name": "get_system_status",
+          "params": [],
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "render_dashboard",
+          "params": [],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "search_memory",
+          "params": [
+            "query"
+          ],
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        }
+      ],
+      "exports": [
+        "get_system_status",
+        "render_dashboard",
+        "search_memory"
+      ],
+      "totalLines": 94,
+      "hasStructuralAnalysis": true
+    },
+    "tui/full_app.py": {
+      "filePath": "tui/full_app.py",
+      "contentHash": "2963d1c93b54591621e1422901a0fa0882b5a4181ae6259ceaaa7ec6b77117d0",
+      "functions": [
+        {
+          "name": "clear_screen",
+          "params": [],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "show_menu",
+          "params": [
+            "current"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "panel_dashboard",
+          "params": [],
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "panel_search",
+          "params": [],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "panel_save",
+          "params": [],
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "panel_stats",
+          "params": [],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "panel_settings",
+          "params": [],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "panel_timeline",
+          "params": [],
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "panel_graph",
+          "params": [],
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "main",
+          "params": [],
+          "exported": true,
+          "lineCount": 22
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "clear_screen",
+        "show_menu",
+        "panel_dashboard",
+        "panel_search",
+        "panel_save",
+        "panel_stats",
+        "panel_settings",
+        "panel_timeline",
+        "panel_graph",
+        "main"
+      ],
+      "totalLines": 211,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

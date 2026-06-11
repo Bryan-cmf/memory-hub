@@ -170,7 +170,7 @@ def step_start_daemon():
 
     # Start daemon with --port flag
     daemon_proc = subprocess.Popen(
-        [sys.executable, str(PROJECT_ROOT / "capture_daemon.py"), "--port", str(TEST_PORT)],
+        [sys.executable, "-m", "memory_hub.daemon", "--port", str(TEST_PORT)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         env={**os.environ, "HOME": str(TEST_HOME)},

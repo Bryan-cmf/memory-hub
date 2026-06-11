@@ -5,9 +5,9 @@ import json, os, tempfile, time, sys, threading
 from pathlib import Path
 from datetime import datetime
 
-# Add capture_daemon to path
+# Add memory_hub.daemon to path
 sys.path.insert(0, str(Path(__file__).parent))
-from capture_daemon import _discover, _scan_file, _process, _file_save, run_scan_cycle, PLATFORMS, STATE, MH_DIR, CAPTURE_DIR, OFFSETS_FILE
+from memory_hub.daemon import _discover, _scan_file, _process, _file_save, run_scan_cycle, PLATFORMS, STATE, MH_DIR, CAPTURE_DIR, OFFSETS_FILE
 
 def test_dual_mode_capture():
     """H4.1: Test MODE A (MCP) + MODE B (scan) simultaneously."""
@@ -19,7 +19,7 @@ def test_dual_mode_capture():
     for k in STATE: STATE[k] = 0 if isinstance(STATE[k], int) else ([] if isinstance(STATE[k], list) else STATE[k])
     
     # Test MODE A: MCP intercept
-    from capture_daemon import mcp_intercept
+    from memory_hub.daemon import mcp_intercept
     r1 = mcp_intercept("openclaw", "Test MCP memory: completed market research report")
     assert r1["status"] == "captured"
     assert STATE["mode_a_count"] == 1

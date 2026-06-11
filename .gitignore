@@ -9,3 +9,4 @@ build/
 ~/.memory-hub/captured/
 ~/.memory-hub/capture_offsets.json
 ~/.memory-hub/capture_daemon_state.json
+~/.memory-hub/capture_state.json

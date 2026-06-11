@@ -26,7 +26,7 @@ def get_system_status():
         req = urllib.request.Request("http://localhost:6333/")
         urllib.request.urlopen(req, timeout=2)
         status["qdrant"] = "online"
-    except:
+    except Exception:
         status["qdrant"] = "offline"
     
     # Check scanner state
@@ -35,15 +35,14 @@ def get_system_status():
             state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
             status["last_scan"] = state.get("last_scan_time")
             status["sessions_tracked"] = len(state.get("sessions", {}))
-        except:
-            pass
+        except Exception: pass
     
     # Check scanner pid
     import subprocess
     try:
         r = subprocess.run(["pgrep", "-f", "session_scanner.py"], capture_output=True, text=True)
         status["scanner"] = "running" if r.stdout.strip() else "stopped"
-    except:
+    except Exception:
         status["scanner"] = "unknown"
     
     return status
@@ -75,7 +74,7 @@ def search_memory(query: str):
                 start = max(0, idx - 60)
                 snippet = content[start:idx + len(query) + 100].replace("\n", " ")[:150]
                 results.append({"file": str(f.relative_to(memory_dir)), "snippet": snippet})
-        except: continue
+        except Exception: continue
     
     return results[:10]
 

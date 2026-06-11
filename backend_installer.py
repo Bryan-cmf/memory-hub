@@ -3,7 +3,7 @@
 import sys,os,subprocess,json,time,platform as pf,termios,tty,urllib.request
 from pathlib import Path
 
-def cls(): os.system("clear")
+def cls(): print("\033c", end="", flush=True)
 B="\033[1m";N="\033[0m";G="\033[32m";C="\033[36m";Y="\033[33m";R="\033[31m";D="\033[2m\033[37m";H="\033[7m"
 
 def box(t,w=62):
@@ -39,7 +39,7 @@ BACKENDS={
            "desc":"Metadata + full-text index"},
  "qdrant":{"name":"Qdrant",
            "cmd":["docker","run","-d","--name","mh-qdrant","-p","6333:6333","qdrant/qdrant"],
-           "check":["curl","-sf","http://localhost:6333/health"],
+           "check":["curl","-sf","http://localhost:6333/collections"],
            "collections":["openclaw_mem","hermes_mem","deepseek_mem","claude_mem"],
            "desc":"Vector search primary"},
  "chroma":{"name":"Chroma",
@@ -64,12 +64,12 @@ def detect():
         c=be.get("check")
         if not c:continue
         try:be["installed"]=subprocess.run(c,capture_output=True,timeout=5).returncode==0
-        except:be["installed"]=False
+        except Exception: be["installed"]=False
 
 def load_cfg():
     if CFG.exists():
         try:return json.loads(CFG.read_text(encoding="utf-8"))
-        except:pass
+        except Exception: pass
     return {"installed":[]}
 
 def save_cfg(cfg):
@@ -115,11 +115,17 @@ def auto_connect(installed_list):
         for col in BACKENDS["qdrant"].get("collections",[]):
             try:
                 import urllib.request
-                data=json.dumps({"vectors":{"size":384,"distance":"Cosine","on_disk":True}}).encode()
+                # 維度優先用 backends.py 的動態檢測，否則默認 1024 (BGE-m3)
+                try:
+                    from memory_hub.backends import DIM as BACKEND_DIM
+                    _dim = BACKEND_DIM or 1024
+                except Exception:
+                    _dim = 1024
+                data=json.dumps({"vectors":{"size":_dim,"distance":"Cosine","on_disk":True}}).encode()
                 req=urllib.request.Request(f"http://localhost:6333/collections/{col}",data=data,method="PUT",
                                            headers={"Content-Type":"application/json"})
                 urllib.request.urlopen(req,timeout=5)
-            except:pass
+            except Exception: pass
         connected.append("Qdrant: 4 collections ready on :6333")
     if "chroma" in installed_list:connected.append("Chroma: vector ops available")
     if "lancedb" in installed_list:connected.append("LanceDB: embedded search ready")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """MemoryHub Hub Server v2.0 — preserves original capture_daemon dashboard style"""
 import json,os,sys,time; from pathlib import Path; from datetime import datetime,timezone
-from http.server import HTTPServer,BaseHTTPRequestHandler; from urllib.parse import urlparse,parse_qs,unquote
+from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler; from urllib.parse import urlparse,parse_qs,unquote
 
 HUB_PORT=int(os.getenv("HUB_PORT","3120")); MH_DIR=Path(os.path.expanduser("~/.memory-hub"))
 STATE_FILE=MH_DIR/"hub_state.json"; HOOK_LOG_DIR=MH_DIR/"hooks"
@@ -30,7 +30,7 @@ def unified_search(query,limit=10):
                 if query.lower() in c.lower():
                     r.append({"source":"file","content":c[:200],"tags":data.get("tags",[])})
                     if len(r)>=limit: break
-            except: continue
+            except Exception: continue
     return {"query":query,"total":len(r),"results":r[:limit]}
 
 DASH="""<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>MemoryHub</title>
@@ -54,18 +54,19 @@ h1{font-size:1.2em;color:#58a6ff;margin-bottom:2px}.sub{color:#8b949e;font-size:
 <div class="cards" id="cards">LOADING...</div>
 <div class="flow" id="flow">LOADING...</div>
 <script>
+function esc(s){if(s==null)return"";var d=document.createElement("div");d.textContent=String(s);return d.innerHTML}
 async function r(){try{let s=await(await fetch('/api/state')).json()
 document.getElementById('cards').innerHTML=Object.entries(s.platforms||{}).map(([k,p])=>
-`<div class="card"><h2>${p.name||k}</h2><div class="n">${p.captured||0}</div>
-<div class="pre">${p.last_preview||'Waiting...'}</div></div>`).join('')
+`<div class="card"><h2>${esc(p.name||k)}</h2><div class="n">${p.captured||0}</div>
+<div class="pre">${esc(p.last_preview||'Waiting...')}</div></div>`).join('')
 document.getElementById('flow').innerHTML=(s.recent||[]).slice(-30).reverse().map(m=>
-`<div class="msg"><span class="pf">${m.platform||''}</span> <span class="${(m.role||'')=='user'?'u':'a'}">${(m.role||'')=='user'?'👉':'🤖'}</span> ${(m.content||'').substring(0,100)} <span class="t">${(m.time||'').slice(11,19)}</span></div>`).join('')
+`<div class="msg"><span class="pf">${esc(m.platform||'')}</span> <span class="${(m.role||'')=='user'?'u':'a'}">${(m.role||'')=='user'?'👉':'🤖'}</span> ${esc((m.content||'').substring(0,100))} <span class="t">${esc((m.time||'').slice(11,19))}</span></div>`).join('')
 document.getElementById('tb').textContent=s.total_messages||0
 document.getElementById('pc').textContent=Object.keys(s.platforms||{}).length}catch(e){}setTimeout(r,2000)}
 async function doSearch(){let q=document.getElementById('sq').value
 let s=await(await fetch('/api/search?q='+encodeURIComponent(q))).json()
-document.getElementById('flow').innerHTML='<h2>Search: '+q+' ('+s.total+' results)</h2>'+(s.results||[]).slice(0,15).map(r=>
-`<div class="msg"><span class="pf">[${r.source}]</span> ${(r.content||'').substring(0,120)}</div>`).join('')}
+document.getElementById('flow').innerHTML='<h2>Search: '+esc(q)+' ('+s.total+' results)</h2>'+(s.results||[]).slice(0,15).map(r=>
+`<div class="msg"><span class="pf">[${esc(r.source)}]</span> ${esc((r.content||'').substring(0,120))}</div>`).join('')}
 r()
 </script></body></html>"""
 
@@ -82,7 +83,10 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path=="/hook":
             try:
-                body=json.loads(self.rfile.read(int(self.headers.get("Content-Length",0))))
+                cl = int(self.headers.get("Content-Length", 0))
+                if cl > 1024 * 1024:
+                    self._j({"error": "Content too large (max 1MB)"}, 413); return
+                body=json.loads(self.rfile.read(cl))
                 process_hook(body.get("platform","unknown"),body.get("message",body))
                 self._j({"status":"captured"})
             except Exception as e: self._j({"error":str(e)},400)
@@ -96,8 +100,8 @@ def run():
     print(f"📡 http://localhost:{HUB_PORT}",file=sys.stderr)
     if STATE_FILE.exists():
         try: saved=json.loads(STATE_FILE.read_text(encoding="utf-8"));STATE["total_messages"]=saved.get("total_messages",0);STATE["platforms"]=saved.get("platforms",{})
-        except:pass
-    srv=HTTPServer(("127.0.0.1",HUB_PORT),H)
+        except Exception: pass
+    srv=ThreadingHTTPServer(("127.0.0.1",HUB_PORT),H)
     try: srv.serve_forever()
     except KeyboardInterrupt:
         STATE_FILE.write_text(json.dumps(STATE,ensure_ascii=False,default=str,indent=2),encoding="utf-8");srv.shutdown()

@@ -211,7 +211,7 @@ def status_detail():
                 for k in keys:
                     d = d.get(k, {})
                 installed = d and len(d) > 1  # more than just empty dict
-            except: pass
+            except Exception: pass
         icon = f"{G}✅{N}" if installed else f"{Y}⚠️{N}" if detected else f"{R}❌{N}"
         status_text = "configured" if installed else ("platform exists, MCP not configured" if detected else "not detected")
         print(f"  {icon} {name:<14} {status_text}")
@@ -317,7 +317,7 @@ def run_verify():
                     d = d.get(k, {})
                 ok = d and len(d) > 1
                 detail = "configured" if ok else "not configured"
-            except: detail = "parse error"
+            except Exception: detail = "parse error"
         else:
             detected = fp.parent.exists()
             detail = "platform not detected" if not detected else "config not found"
